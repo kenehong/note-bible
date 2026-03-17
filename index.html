@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Bible Note</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&family=IBM+Plex+Sans+KR:wght@300;400;500&family=Gowun+Dodum&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #ffffff;
+  --surface: #f7f7f7;
+  --elevated: #ffffff;
+  --text: #1a1a1a;
+  --text-dim: #888;
+  --text-muted: #bbb;
+  --border: #e5e5e5;
+  --divider: #f0f0f0;
+  --accent: #333;
+  --accent-subtle: rgba(0,0,0,0.04);
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --font: 'Noto Sans KR', -apple-system, 'Pretendard', 'Segoe UI', system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111;
+    --surface: #1a1a1a;
+    --elevated: #222;
+    --text: #e0e0e0;
+    --text-dim: #777;
+    --text-muted: #555;
+    --border: #2a2a2a;
+    --divider: #1e1e1e;
+    --accent: #ddd;
+    --accent-subtle: rgba(255,255,255,0.05);
+    --shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+}
+
+html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); -webkit-tap-highlight-color: transparent; }
+
+body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; height: 100dvh; overflow: hidden; }
+
+/* === LOADING STATE === */
+.loading-screen {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--bg); gap: 16px;
+  transition: opacity 0.4s;
+}
+.loading-screen.hidden { opacity: 0; pointer-events: none; }
+.loading-spinner {
+  width: 24px; height: 24px;
+  border: 2px solid var(--border);
+  border-top-color: var(--text-dim);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 13px; color: var(--text-muted); }
+.loading-error {
+  max-width: 340px; text-align: center; padding: 1.5rem;
+  font-size: 13px; line-height: 1.7; color: var(--text-dim);
+}
+.loading-error code {
+  display: block; margin-top: 8px; padding: 8px 12px;
+  background: var(--surface); border-radius: 6px;
+  font-size: 12px; color: var(--text);
+}
+
+/* === GLASS FLOATING NAV BAR (bottom) === */
+.glass-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+  display: flex; justify-content: center;
+  padding: 0 1.25rem 1.25rem;
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s;
+}
+.glass-nav-inner {
+  pointer-events: auto;
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(20,20,20,0.88);
+  backdrop-filter: saturate(180%) blur(24px); -webkit-backdrop-filter: saturate(180%) blur(24px);
+  border: 0.5px solid rgba(255,255,255,0.08);
+  border-radius: 22px;
+  padding: 5px 5px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  max-width: 260px; width: auto;
+}
+@media (prefers-color-scheme: dark) {
+  .glass-nav-inner {
+    background: rgba(30,30,30,0.9);
+    border-color: rgba(255,255,255,0.1);
+  }
+}
+.glass-nav-btn {
+  width: 36px; height: 36px; flex: 0 0 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font); font-size: 15px; font-weight: 400;
+  color: rgba(255,255,255,0.55); background: transparent; border: none;
+  cursor: pointer; border-radius: 50%;
+  transition: transform 0.15s cubic-bezier(0.2,0,0,1), background 0.2s, color 0.15s;
+  -webkit-user-select: none; user-select: none;
+}
+.glass-nav-btn:hover {
+  background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.9);
+}
+.glass-nav-btn:active {
+  transform: scale(0.9);
+  background: rgba(255,255,255,0.15);
+}
+.glass-nav-btn.chapter-btn {
+  flex: 0 1 auto; width: auto; border-radius: 16px;
+  font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.92);
+  letter-spacing: -0.01em;
+  padding: 0 10px; white-space: nowrap;
+}
+.glass-nav-btn.chapter-btn:hover { background: rgba(255,255,255,0.08); }
+.glass-nav-btn:disabled {
+  opacity: 0.2; cursor: default; transform: none;
+}
+
+/* === MAIN CONTENT === */
+.main-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; scrollbar-width: none; }
+.main-content::-webkit-scrollbar { display: none; }
+
+/* Reading focus gradient */
+.main-content::before,
+.main-content::after {
+  content: ''; position: sticky; left: 0; right: 0; height: 140px;
+  display: block; z-index: 5; pointer-events: none;
+}
+.main-content::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+}
+.main-content::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+  margin-top: -140px;
+}
+
+/* === VERSE DISPLAY === */
+.verses-wrap {
+  padding: 30vh 3rem 6rem;
+}
+@media (max-width: 768px) {
+  .verses-wrap { padding: 28vh 1.75rem 6rem; }
+}
+
+.verse-block {
+  display: block;
+  margin-bottom: 1rem;
+}
+.verse-block.rhythm-break {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+}
+
+.verse-num {
+  font-size: 0.65rem; font-weight: 600; color: var(--text-muted); opacity: 0.35;
+  vertical-align: super; margin-right: 2px; line-height: 1; user-select: none;
+}
+.verse-text {
+  font-size: 1rem; line-height: 1.9; font-weight: 300; cursor: pointer;
+  border-radius: 6px; padding: 4px 6px; margin: -4px -6px;
+  transition: background 0.2s, transform 0.15s cubic-bezier(0.2,0,0,1);
+  letter-spacing: -0.008em;
+  display: inline;
+}
+.verse-text:active { transform: scale(0.985); }
+.verse-text:hover { background: var(--accent-subtle); }
+.verse-text.selected {
+  background: rgba(0,0,0,0.06);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.04);
+}
+@media (prefers-color-scheme: dark) {
+  .verse-text.selected {
+    background: rgba(255,255,255,0.08);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
+  }
+}
+@keyframes selectPulse {
+  0% { background: rgba(0,0,0,0); }
+  50% { background: rgba(0,0,0,0.07); }
+  100% { background: rgba(0,0,0,0.04); }
+}
+.verse-text.just-selected { animation: selectPulse 0.4s ease-out; }
+
+/* Note indicator dot on verses with notes */
+.verse-block.has-note { position: relative; }
+.verse-note-dot {
+  display: inline-block; width: 4px; height: 4px;
+  background: var(--text-muted); border-radius: 50%;
+  margin-left: 4px; vertical-align: middle; opacity: 0.5;
+}
+
+/* === SETTINGS PANEL === */
+.settings-panel {
+  position: fixed; bottom: 70px; left: 0; right: 0; z-index: 45;
+  display: flex; justify-content: center;
+  padding: 0 1rem;
+  pointer-events: none;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity 0.25s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.settings-panel.active {
+  opacity: 1; transform: translateY(0); pointer-events: auto;
+}
+.settings-panel-inner {
+  background: var(--elevated); border: 1px solid var(--border); border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  max-width: 380px; width: 100%; overflow: hidden;
+  max-height: 60vh; overflow-y: auto;
+}
+@media (prefers-color-scheme: dark) {
+  .settings-panel-inner { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+}
+.settings-section {
+  padding: 12px 16px; border-bottom: 1px solid var(--divider);
+}
+.settings-section:last-child { border-bottom: none; }
+.settings-label {
+  font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.04em;
+  margin-bottom: 8px; text-transform: uppercase;
+}
+.settings-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.settings-btn {
+  flex: 1; padding: 8px; text-align: center; font-family: var(--font); font-size: 13px;
+  font-weight: 400; color: var(--text-dim); background: none;
+  border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.settings-btn:hover { background: var(--accent-subtle); }
+.settings-btn.active { color: var(--text); border-color: var(--text); font-weight: 500; }
+
+.font-option {
+  padding: 12px 16px; cursor: pointer; display: flex; flex-direction: column; gap: 2px;
+  transition: background 0.15s;
+}
+.font-option:hover { background: var(--accent-subtle); }
+.font-option.selected { background: var(--accent-subtle); border-left: 2px solid var(--text); }
+.font-option .font-name { font-size: 11px; color: var(--text-muted); letter-spacing: 0.02em; }
+.font-option .font-preview { font-size: 15px; color: var(--text); line-height: 1.6; }
+
+/* === FLOATING ACTION BAR === */
+.action-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 30;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  padding: 0 1.25rem 1.25rem;
+  transform: translateY(20px) scale(0.95);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s;
+}
+.action-bar.active {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+.action-bar-inner {
+  display: flex; align-items: center; gap: 8px;
+  max-width: 340px; width: 100%;
+  background: rgba(20,20,20,0.88);
+  backdrop-filter: saturate(180%) blur(24px); -webkit-backdrop-filter: saturate(180%) blur(24px);
+  border: 0.5px solid rgba(255,255,255,0.08);
+  border-radius: 22px;
+  padding: 6px 6px 6px 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+}
+@media (prefers-color-scheme: dark) {
+  .action-bar-inner {
+    background: rgba(30,30,30,0.9);
+    border-color: rgba(255,255,255,0.1);
+  }
+}
+.action-bar .action-ref {
+  flex: 1; font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+.action-bar button {
+  font-family: var(--font); font-size: 12px; font-weight: 500;
+  padding: 8px 14px; border-radius: 16px; cursor: pointer; white-space: nowrap;
+  transition: transform 0.12s cubic-bezier(0.2,0,0,1);
+}
+.action-bar button:active { transform: scale(0.92); }
+.action-bar .action-note-btn {
+  background: rgba(255,255,255,0.92); border: none; color: rgba(20,20,20,0.95);
+}
+.action-bar .action-cancel-btn {
+  background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.5);
+}
+
+/* === SLIDE NOTE PANEL === */
+.note-overlay {
+  position: fixed; inset: 0; z-index: 50; opacity: 0; pointer-events: none;
+  background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  transition: opacity 0.3s;
+}
+.note-overlay.active { opacity: 1; pointer-events: auto; }
+
+.note-panel {
+  position: fixed; top: 0; right: 0; z-index: 51;
+  width: 56%; max-width: 480px; height: 100dvh;
+  background: var(--bg); border-left: 1px solid var(--border);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex; flex-direction: column;
+  box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+}
+.note-panel.active { transform: translateX(0); }
+
+@media (max-width: 768px) {
+  .note-panel { width: 88%; max-width: none; }
+}
+
+.note-panel-header {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; gap: 12px;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.note-panel-header .ref { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.note-panel-header button {
+  background: none; border: 1px solid var(--border); color: var(--text-dim);
+  padding: 4px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; font-family: var(--font);
+  white-space: nowrap;
+}
+
+.note-panel-body { flex: 1; overflow-y: auto; padding: 1.25rem; padding-bottom: 80px; }
+
+.note-verse-quote {
+  font-size: 13px; line-height: 1.7; color: var(--text-dim);
+  padding: 12px 14px; background: var(--surface); border-radius: 8px;
+  margin-bottom: 16px; border-left: 3px solid var(--border);
+  white-space: pre-wrap;
+}
+
+.note-panel-footer {
+  position: sticky; bottom: 0; z-index: 3;
+  padding: 12px 1.25rem;
+  background: linear-gradient(to bottom, transparent 0%, var(--bg) 40%);
+  padding-top: 24px;
+}
+.note-add-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 12px 0;
+  font-family: var(--font); font-size: 13px; font-weight: 500;
+  color: var(--text-dim); background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.12s;
+}
+.note-add-btn:hover { color: var(--text); background: var(--accent-subtle); }
+.note-add-btn:active { transform: scale(0.97); }
+
+.note-item-inner {
+  cursor: pointer; border-radius: 8px; padding: 4px 0;
+  transition: background 0.15s;
+}
+.note-item-inner:hover { background: var(--accent-subtle); }
+.note-item-editing .note-content { display: none; }
+.note-item-editing .note-item-inner { cursor: default; background: none; }
+.note-edit-textarea {
+  width: 100%; min-height: 80px; resize: none;
+  font-family: var(--font); font-size: 14px; line-height: 1.85;
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text); outline: none;
+  margin-top: 8px;
+}
+.note-edit-textarea:focus { border-color: var(--text-dim); }
+.note-edit-actions {
+  display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;
+}
+.note-edit-actions button {
+  font-family: var(--font); font-size: 12px; font-weight: 500;
+  padding: 6px 14px; border-radius: 8px; cursor: pointer; border: none;
+  transition: transform 0.12s;
+}
+.note-edit-actions button:active { transform: scale(0.94); }
+.note-edit-actions .edit-cancel { background: none; color: var(--text-muted); border: 1px solid var(--border); }
+.note-edit-actions .edit-save { background: var(--text); color: var(--bg); }
+.note-edit-actions .edit-delete { background: none; color: #c44; border: 1px solid #c44; }
+
+.note-item {
+  padding: 1.25rem 0; border-bottom: 1px solid var(--divider);
+}
+.note-item:last-child { border-bottom: none; }
+.note-date {
+  font-size: 11px; font-weight: 500; color: var(--text-muted); margin-bottom: 10px;
+  letter-spacing: 0.03em;
+}
+.note-content {
+  font-size: 14px; line-height: 1.85; color: var(--text); white-space: pre-wrap;
+  padding: 0 4px;
+}
+
+.note-empty {
+  text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 13px; line-height: 1.6;
+}
+
+/* === BOOK SELECTOR OVERLAY === */
+.book-selector {
+  position: fixed; inset: 0; z-index: 60;
+  background: var(--bg); display: none; flex-direction: column;
+}
+.book-selector.active { display: flex; }
+
+.book-selector-header {
+  display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); gap: 12px;
+}
+.book-selector-header button {
+  font-family: var(--font); font-size: 13px; background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 8px;
+}
+.book-selector-header .tabs { display: flex; flex: 1; gap: 0; }
+.book-selector-header .tab {
+  flex: 1; text-align: center; padding: 8px; font-size: 13px; font-weight: 600;
+  color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent;
+}
+.book-selector-header .tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+.book-selector-body { flex: 1; overflow-y: auto; padding: 12px; }
+
+.book-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 6px;
+}
+.book-item {
+  padding: 10px 6px; text-align: center; font-size: 12px; font-weight: 500;
+  border-radius: 6px; cursor: pointer; color: var(--text);
+  border: 1px solid var(--divider);
+  transition: background 0.15s, transform 0.12s;
+}
+.book-item:hover { background: var(--accent-subtle); }
+.book-item:active { background: var(--surface); transform: scale(0.97); }
+
+.chapter-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap: 6px;
+}
+.chapter-item {
+  padding: 12px 6px; text-align: center; font-size: 14px; font-weight: 500;
+  border-radius: 6px; cursor: pointer; color: var(--text);
+  border: 1px solid var(--divider);
+  transition: background 0.15s, transform 0.12s;
+}
+.chapter-item:hover { background: var(--accent-subtle); }
+.chapter-item:active { transform: scale(0.97); }
+
+/* === ALL NOTES VIEW === */
+.all-notes-panel {
+  position: fixed; inset: 0; z-index: 55;
+  background: var(--bg); display: none; flex-direction: column;
+}
+.all-notes-panel.active { display: flex; }
+
+.all-notes-header {
+  display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); gap: 12px;
+}
+.all-notes-header h2 { flex: 1; font-size: 15px; font-weight: 600; }
+.all-notes-header button {
+  font-family: var(--font); background: none; border: 1px solid var(--border); color: var(--text-dim);
+  padding: 6px 14px; border-radius: 5px; font-size: 12px; cursor: pointer;
+}
+
+.all-notes-body { flex: 1; overflow-y: auto; padding: 16px; }
+
+.all-notes-date-group { margin-bottom: 20px; }
+.all-notes-date {
+  font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.04em;
+  text-transform: uppercase; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--divider);
+}
+.all-notes-card {
+  padding: 12px 0; border-bottom: 1px solid var(--divider); cursor: pointer;
+  transition: background 0.15s;
+}
+.all-notes-card:last-child { border-bottom: none; }
+.all-notes-card:hover { background: var(--accent-subtle); margin: 0 -8px; padding: 12px 8px; border-radius: 6px; }
+.all-notes-ref { font-size: 12px; font-weight: 600; color: var(--text-dim); margin-bottom: 4px; }
+.all-notes-preview { font-size: 13px; color: var(--text); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-spinner" id="loadingSpinner"></div>
+  <div class="loading-text" id="loadingText">Loading Bible data...</div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-panel-inner">
+    <div class="settings-section">
+      <div class="settings-label">언어</div>
+      <div class="settings-row">
+        <button class="settings-btn active" id="langKo">한글</button>
+        <button class="settings-btn" id="langEn">English</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">글꼴</div>
+      <div class="font-option selected" data-font="'Noto Sans KR', sans-serif" data-weight="300">
+        <span class="font-name">Noto Sans KR Light</span>
+        <span class="font-preview" style="font-family:'Noto Sans KR';font-weight:300;">태초에 하나님이 천지를</span>
+      </div>
+      <div class="font-option" data-font="'IBM Plex Sans KR', sans-serif" data-weight="300">
+        <span class="font-name">IBM Plex Sans KR</span>
+        <span class="font-preview" style="font-family:'IBM Plex Sans KR';font-weight:300;">태초에 하나님이 천지를</span>
+      </div>
+      <div class="font-option" data-font="'Gowun Dodum', sans-serif" data-weight="400">
+        <span class="font-name">고운돋움</span>
+        <span class="font-preview" style="font-family:'Gowun Dodum';font-weight:400;">태초에 하나님이 천지를</span>
+      </div>
+      <div class="font-option" data-font="'Nanum Myeongjo', serif" data-weight="400">
+        <span class="font-name">나눔명조</span>
+        <span class="font-preview" style="font-family:'Nanum Myeongjo';font-weight:400;">태초에 하나님이 천지를</span>
+      </div>
+      <div class="font-option" data-font="-apple-system, 'Pretendard', sans-serif" data-weight="300">
+        <span class="font-name">System</span>
+        <span class="font-preview" style="font-family:-apple-system,'Pretendard',sans-serif;font-weight:300;">태초에 하나님이 천지를</span>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">글자 크기</div>
+      <div class="settings-row">
+        <button class="settings-btn" id="fontSizeDown" style="flex:0 0 44px;">A-</button>
+        <span id="fontSizeLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">16px</span>
+        <button class="settings-btn" id="fontSizeUp" style="flex:0 0 44px;">A+</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">줄 간격</div>
+      <div class="settings-row">
+        <button class="settings-btn" id="lineHeightDown">좁게</button>
+        <span id="lineHeightLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">1.9</span>
+        <button class="settings-btn" id="lineHeightUp">넓게</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">구절 간격</div>
+      <div class="settings-row">
+        <button class="settings-btn" id="versePaddingDown">좁게</button>
+        <span id="versePaddingLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">1rem</span>
+        <button class="settings-btn" id="versePaddingUp">넓게</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">좌우 여백</div>
+      <div class="settings-row">
+        <button class="settings-btn" id="sideMarginDown">좁게</button>
+        <span id="sideMarginLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">3rem</span>
+        <button class="settings-btn" id="sideMarginUp">넓게</button>
+      </div>
+    </div>
+    <div class="settings-section" style="cursor:pointer;" id="settingsAllNotes">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;font-weight:500;color:var(--text);">모든 노트</span>
+        <span style="font-size:12px;color:var(--text-muted);">&rarr;</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content" id="mainContent">
+  <div class="verses-wrap" id="versesWrap"></div>
+</div>
+
+<!-- GLASS FLOATING NAV BAR -->
+<div class="glass-nav" id="glassNav">
+  <div class="glass-nav-inner">
+    <button class="glass-nav-btn" id="btnPrev">&#8249;</button>
+    <button class="glass-nav-btn chapter-btn" id="bookChapterBtn"></button>
+    <button class="glass-nav-btn" id="btnNext">&#8250;</button>
+    <button class="glass-nav-btn" id="btnSettings">&#9776;</button>
+  </div>
+</div>
+
+<!-- FLOATING ACTION BAR -->
+<div class="action-bar" id="actionBar">
+  <div class="action-bar-inner">
+    <span class="action-ref" id="actionRef"></span>
+    <button class="action-note-btn" id="actionNoteBtn">노트 쓰기</button>
+    <button class="action-cancel-btn" id="actionCancelBtn">취소</button>
+  </div>
+</div>
+
+<!-- NOTE PANEL -->
+<div class="note-overlay" id="noteOverlay"></div>
+<div class="note-panel" id="notePanel">
+  <div class="note-panel-header">
+    <span class="ref" id="notePanelRef"></span>
+    <button id="notePanelClose">닫기</button>
+  </div>
+  <div class="note-panel-body" id="notePanelBody"></div>
+</div>
+
+<!-- BOOK SELECTOR -->
+<div class="book-selector" id="bookSelector">
+  <div class="book-selector-header">
+    <button id="bookSelectorClose">&#10005;</button>
+    <div class="tabs">
+      <div class="tab active" data-tab="ot">구약</div>
+      <div class="tab" data-tab="nt">신약</div>
+    </div>
+  </div>
+  <div class="book-selector-body" id="bookSelectorBody"></div>
+</div>
+
+<!-- ALL NOTES VIEW -->
+<div class="all-notes-panel" id="allNotesPanel">
+  <div class="all-notes-header">
+    <h2>모든 노트</h2>
+    <button id="allNotesClose">닫기</button>
+  </div>
+  <div class="all-notes-body" id="allNotesBody"></div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ============================
+  // DATABASE (Dexie / IndexedDB)
+  // ============================
+  var db = new Dexie('BibleNoteDB');
+  db.version(1).stores({
+    notes: '++id, book, chapter, verse_start, verse_end, date, updated_at'
+  });
+
+  // ============================
+  // KOREAN BOOK NAMES (66 books, same order as JSON)
+  // ============================
+  var KOREAN_BOOK_NAMES = [
+    '창세기','출애굽기','레위기','민수기','신명기',
+    '여호수아','사사기','룻기','사무엘상','사무엘하',
+    '열왕기상','열왕기하','역대상','역대하','에스라',
+    '느헤미야','에스더','욥기','시편','잠언',
+    '전도서','아가','이사야','예레미야','예레미야애가',
+    '에스겔','다니엘','호세아','요엘','아모스',
+    '오바댜','요나','미가','나훔','하박국',
+    '스바냐','학개','스가랴','말라기',
+    '마태복음','마가복음','누가복음','요한복음','사도행전',
+    '로마서','고린도전서','고린도후서','갈라디아서','에베소서',
+    '빌립보서','골로새서','데살로니가전서','데살로니가후서',
+    '디모데전서','디모데후서','디도서','빌레몬서','히브리서',
+    '야고보서','베드로전서','베드로후서','요한일서',
+    '요한이서','요한삼서','유다서','요한계시록'
+  ];
+
+  var OT_COUNT = 39;
+
+  // ============================
+  // STATE
+  // ============================
+  var bibleKo = null;
+  var bibleEn = null;
+
+  var state = {
+    bookIndex: 0,
+    chapter: 1,
+    lang: 'ko',
+    selectedVerses: [],
+    fontFamily: "'Noto Sans KR', sans-serif",
+    fontWeight: '300',
+    fontSize: 16,
+    lineHeight: 1.9,
+    versePadding: 1,
+    sideMargin: 3
+  };
+
+  // ============================
+  // DOM REFS
+  // ============================
+  var versesWrap = document.getElementById('versesWrap');
+  var bookChapterBtn = document.getElementById('bookChapterBtn');
+  var noteOverlay = document.getElementById('noteOverlay');
+  var notePanel = document.getElementById('notePanel');
+  var notePanelRef = document.getElementById('notePanelRef');
+  var notePanelBody = document.getElementById('notePanelBody');
+  var bookSelector = document.getElementById('bookSelector');
+  var bookSelectorBody = document.getElementById('bookSelectorBody');
+  var settingsPanel = document.getElementById('settingsPanel');
+  var allNotesPanel = document.getElementById('allNotesPanel');
+  var allNotesBody = document.getElementById('allNotesBody');
+  var actionBar = document.getElementById('actionBar');
+  var actionRef = document.getElementById('actionRef');
+  var glassNav = document.getElementById('glassNav');
+  var mainContent = document.getElementById('mainContent');
+  var loadingScreen = document.getElementById('loadingScreen');
+  var loadingText = document.getElementById('loadingText');
+  var loadingSpinner = document.getElementById('loadingSpinner');
+
+  // ============================
+  // UTIL: clear all children
+  // ============================
+  function clearChildren(el) {
+    while (el.firstChild) el.removeChild(el.firstChild);
+  }
+
+  // ============================
+  // SETTINGS PERSISTENCE (localStorage)
+  // ============================
+  var SETTINGS_KEY = 'bible-note-settings';
+
+  function saveSettings() {
+    var s = {
+      bookIndex: state.bookIndex,
+      chapter: state.chapter,
+      lang: state.lang,
+      fontFamily: state.fontFamily,
+      fontWeight: state.fontWeight,
+      fontSize: state.fontSize,
+      lineHeight: state.lineHeight,
+      versePadding: state.versePadding,
+      sideMargin: state.sideMargin
+    };
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch(e) {}
+  }
+
+  function loadSettings() {
+    try {
+      var raw = localStorage.getItem(SETTINGS_KEY);
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      if (typeof s.bookIndex === 'number') state.bookIndex = s.bookIndex;
+      if (typeof s.chapter === 'number') state.chapter = s.chapter;
+      if (s.lang) state.lang = s.lang;
+      if (s.fontFamily) state.fontFamily = s.fontFamily;
+      if (s.fontWeight) state.fontWeight = s.fontWeight;
+      if (typeof s.fontSize === 'number') state.fontSize = s.fontSize;
+      if (typeof s.lineHeight === 'number') state.lineHeight = s.lineHeight;
+      if (typeof s.versePadding === 'number') state.versePadding = s.versePadding;
+      if (typeof s.sideMargin === 'number') state.sideMargin = s.sideMargin;
+    } catch(e) {}
+  }
+
+  // ============================
+  // HELPERS
+  // ============================
+  function getBookName(bookIndex, lang) {
+    if (lang === 'ko') return KOREAN_BOOK_NAMES[bookIndex] || '';
+    var data = bibleEn || bibleKo;
+    if (data && data.books[bookIndex]) return data.books[bookIndex].name;
+    return '';
+  }
+
+  function getChapterCount(bookIndex) {
+    var data = bibleKo || bibleEn;
+    if (!data || !data.books[bookIndex]) return 0;
+    return data.books[bookIndex].chapters.length;
+  }
+
+  function getVerses(bookIndex, chapter, lang) {
+    var data = lang === 'ko' ? bibleKo : bibleEn;
+    if (!data || !data.books[bookIndex]) return null;
+    var book = data.books[bookIndex];
+    var ch = book.chapters.find(function(c) { return c.chapter === chapter; });
+    if (!ch) return null;
+    return ch.verses;
+  }
+
+  function buildVerseRef(bookIndex, chapter, verseNums, lang) {
+    var name = getBookName(bookIndex, lang);
+    var chapterLabel = lang === 'ko' ? '장' : '';
+    var prefix = name + ' ' + chapter + chapterLabel + ':';
+
+    if (!verseNums || verseNums.length === 0) return prefix.slice(0, -1);
+    var sorted = verseNums.slice().sort(function(a, b) { return a - b; });
+
+    var parts = [];
+    var rangeStart = sorted[0], rangeEnd = sorted[0];
+    for (var i = 1; i < sorted.length; i++) {
+      if (sorted[i] === rangeEnd + 1) { rangeEnd = sorted[i]; }
+      else {
+        parts.push(rangeStart === rangeEnd ? '' + rangeStart : rangeStart + '-' + rangeEnd);
+        rangeStart = sorted[i]; rangeEnd = sorted[i];
+      }
+    }
+    parts.push(rangeStart === rangeEnd ? '' + rangeStart : rangeStart + '-' + rangeEnd);
+    return prefix + parts.join(', ');
+  }
+
+  // ============================
+  // SELECTION
+  // ============================
+  function clearSelection() {
+    state.selectedVerses = [];
+    document.querySelectorAll('.verse-text.selected').forEach(function(el) {
+      el.classList.remove('selected');
+    });
+    actionBar.classList.remove('active');
+    glassNav.style.opacity = '1';
+    glassNav.style.pointerEvents = '';
+  }
+
+  function updateActionBar() {
+    if (state.selectedVerses.length === 0) {
+      actionBar.classList.remove('active');
+      glassNav.style.opacity = '1';
+      glassNav.style.pointerEvents = '';
+    } else {
+      actionRef.textContent = buildVerseRef(state.bookIndex, state.chapter, state.selectedVerses, state.lang);
+      actionBar.classList.add('active');
+      glassNav.style.opacity = '0';
+      glassNav.style.pointerEvents = 'none';
+    }
+  }
+
+  function toggleVerseSelection(verseNum, el) {
+    var idx = state.selectedVerses.indexOf(verseNum);
+    if (idx === -1) {
+      state.selectedVerses.push(verseNum);
+      el.classList.add('selected');
+      el.classList.add('just-selected');
+      setTimeout(function() { el.classList.remove('just-selected'); }, 400);
+    } else {
+      state.selectedVerses.splice(idx, 1);
+      el.classList.remove('selected');
+    }
+    updateActionBar();
+  }
+
+  // ============================
+  // RENDER VERSES
+  // ============================
+  function renderVerses() {
+    var verses = getVerses(state.bookIndex, state.chapter, state.lang);
+    var chapterLabel = state.lang === 'ko' ? '장' : '';
+    var bookName = getBookName(state.bookIndex, state.lang);
+    bookChapterBtn.textContent = bookName + ' ' + state.chapter + chapterLabel;
+
+    document.getElementById('btnPrev').disabled = (state.chapter <= 1);
+    document.getElementById('btnNext').disabled = (state.chapter >= getChapterCount(state.bookIndex));
+
+    state.selectedVerses = [];
+    actionBar.classList.remove('active');
+    glassNav.style.opacity = '1';
+    glassNav.style.pointerEvents = '';
+
+    clearChildren(versesWrap);
+
+    if (!verses || verses.length === 0) {
+      var p = document.createElement('p');
+      p.style.cssText = 'color:var(--text-muted);text-align:center;padding:3rem 1rem;font-size:14px;';
+      p.textContent = state.lang === 'ko' ? '이 장의 데이터가 없습니다.' : 'No data available for this chapter.';
+      versesWrap.appendChild(p);
+      return;
+    }
+
+    // Query notes for this chapter to show dots
+    db.notes.where({ book: String(state.bookIndex), chapter: state.chapter }).toArray().then(function(chapterNotes) {
+      var notedVerses = new Set();
+      chapterNotes.forEach(function(n) {
+        for (var v = n.verse_start; v <= n.verse_end; v++) notedVerses.add(v);
+      });
+
+      verses.forEach(function(verseObj) {
+        var verseNum = verseObj.verse;
+        var text = verseObj.text.trim();
+
+        var span = document.createElement('span');
+        span.className = 'verse-block';
+        if (verseNum > 1 && (verseNum - 1) % 5 === 0) {
+          span.classList.add('rhythm-break');
+        }
+        if (notedVerses.has(verseNum)) {
+          span.classList.add('has-note');
+        }
+
+        var num = document.createElement('sup');
+        num.className = 'verse-num';
+        num.textContent = verseNum;
+
+        var txt = document.createElement('span');
+        txt.className = 'verse-text';
+        txt.textContent = text;
+        txt.dataset.verse = verseNum;
+        txt.style.fontFamily = state.fontFamily;
+        txt.style.fontWeight = state.fontWeight;
+        if (state.fontSize !== 16) txt.style.fontSize = state.fontSize + 'px';
+        txt.style.lineHeight = state.lineHeight;
+
+        txt.addEventListener('click', function() {
+          toggleVerseSelection(verseNum, txt);
+        });
+
+        span.appendChild(num);
+        span.appendChild(txt);
+
+        if (notedVerses.has(verseNum)) {
+          var dot = document.createElement('span');
+          dot.className = 'verse-note-dot';
+          span.appendChild(dot);
+        }
+
+        versesWrap.appendChild(span);
+      });
+
+      applyReadingSettingsToDOM();
+    });
+
+    saveSettings();
+  }
+
+  // ============================
+  // NOTE PANEL
+  // ============================
+  function openNotePanel(verseNums) {
+    var sorted = verseNums.slice().sort(function(a, b) { return a - b; });
+    var ref = buildVerseRef(state.bookIndex, state.chapter, sorted, state.lang);
+    notePanelRef.textContent = ref;
+
+    var verses = getVerses(state.bookIndex, state.chapter, state.lang) || [];
+
+    clearChildren(notePanelBody);
+
+    // Quote
+    var quoteTexts = sorted.map(function(vn) {
+      var v = verses.find(function(vv) { return vv.verse === vn; });
+      return vn + '. ' + (v ? v.text.trim() : '');
+    });
+    var quote = document.createElement('div');
+    quote.className = 'note-verse-quote';
+    quote.textContent = quoteTexts.join('\n');
+    notePanelBody.appendChild(quote);
+
+    // Query overlapping notes
+    db.notes.where({ book: String(state.bookIndex), chapter: state.chapter }).toArray().then(function(chapterNotes) {
+      var verseNotes = chapterNotes.filter(function(n) {
+        return sorted.some(function(v) { return v >= n.verse_start && v <= n.verse_end; });
+      });
+      verseNotes.sort(function(a, b) { return (b.updated_at || b.date).localeCompare(a.updated_at || a.date); });
+
+      if (verseNotes.length > 0) {
+        verseNotes.forEach(function(n) {
+          notePanelBody.appendChild(makeNoteItem(n, sorted));
+        });
+      }
+
+      // Footer
+      var footer = document.createElement('div');
+      footer.className = 'note-panel-footer';
+      var addBtn = document.createElement('button');
+      addBtn.className = 'note-add-btn';
+      addBtn.textContent = '+ 노트 추가';
+      addBtn.addEventListener('click', function() {
+        var today = new Date().toISOString().split('T')[0];
+        var now = new Date().toISOString();
+        db.notes.add({
+          book: String(state.bookIndex),
+          chapter: state.chapter,
+          verse_start: sorted[0],
+          verse_end: sorted[sorted.length - 1],
+          text: '',
+          date: today,
+          updated_at: now
+        }).then(function() {
+          closeNotePanel();
+          openNotePanel(sorted);
+          setTimeout(function() {
+            var items = notePanelBody.querySelectorAll('.note-item-inner');
+            var last = items[items.length - 1];
+            if (last) last.click();
+          }, 150);
+        });
+      });
+      footer.appendChild(addBtn);
+      notePanelBody.appendChild(footer);
+
+      if (verseNotes.length === 0) {
+        addBtn.click();
+      }
+    });
+
+    noteOverlay.classList.add('active');
+    notePanel.classList.add('active');
+  }
+
+  function makeNoteItem(n, sorted) {
+    var item = document.createElement('div');
+    item.className = 'note-item';
+    var inner = document.createElement('div');
+    inner.className = 'note-item-inner';
+    var dateEl = document.createElement('div');
+    dateEl.className = 'note-date';
+    var rangeStr = n.verse_start === n.verse_end ? ':' + n.verse_start : ':' + n.verse_start + '-' + n.verse_end;
+    dateEl.textContent = n.date + '  \u00B7  ' + rangeStr;
+    var content = document.createElement('div');
+    content.className = 'note-content';
+    content.textContent = n.text;
+    inner.appendChild(dateEl);
+    inner.appendChild(content);
+    item.appendChild(inner);
+
+    inner.addEventListener('click', function() {
+      if (item.classList.contains('note-item-editing')) return;
+      item.classList.add('note-item-editing');
+
+      var ta = document.createElement('textarea');
+      ta.className = 'note-edit-textarea';
+      ta.value = n.text;
+      var actions = document.createElement('div');
+      actions.className = 'note-edit-actions';
+
+      var deleteBtn = document.createElement('button');
+      deleteBtn.className = 'edit-delete';
+      deleteBtn.textContent = '삭제';
+      var spacer = document.createElement('div');
+      spacer.style.flex = '1';
+      var cancelBtn = document.createElement('button');
+      cancelBtn.className = 'edit-cancel';
+      cancelBtn.textContent = '취소';
+      var saveBtn = document.createElement('button');
+      saveBtn.className = 'edit-save';
+      saveBtn.textContent = '저장';
+
+      actions.appendChild(deleteBtn);
+      actions.appendChild(spacer);
+      actions.appendChild(cancelBtn);
+      actions.appendChild(saveBtn);
+
+      item.appendChild(ta);
+      item.appendChild(actions);
+      setTimeout(function() { ta.focus(); }, 50);
+
+      cancelBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        item.classList.remove('note-item-editing');
+        item.removeChild(ta);
+        item.removeChild(actions);
+      });
+
+      saveBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var newText = ta.value.trim();
+        if (!newText) return;
+        var now = new Date().toISOString();
+        db.notes.update(n.id, {
+          text: newText,
+          date: new Date().toISOString().split('T')[0],
+          updated_at: now
+        }).then(function() {
+          closeNotePanel();
+          openNotePanel(sorted);
+          renderVerses();
+        });
+      });
+
+      deleteBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        db.notes.delete(n.id).then(function() {
+          closeNotePanel();
+          openNotePanel(sorted);
+          renderVerses();
+        });
+      });
+    });
+
+    return item;
+  }
+
+  function closeNotePanel() {
+    noteOverlay.classList.remove('active');
+    notePanel.classList.remove('active');
+    clearSelection();
+  }
+
+  noteOverlay.addEventListener('click', closeNotePanel);
+  document.getElementById('notePanelClose').addEventListener('click', closeNotePanel);
+
+  // ============================
+  // ACTION BAR
+  // ============================
+  document.getElementById('actionNoteBtn').addEventListener('click', function() {
+    if (state.selectedVerses.length > 0) {
+      openNotePanel(state.selectedVerses.slice());
+    }
+  });
+  document.getElementById('actionCancelBtn').addEventListener('click', clearSelection);
+
+  // ============================
+  // BOOK SELECTOR
+  // ============================
+  var selectorTab = 'ot';
+  var selectorPhase = 'book';
+  var selectorBookIndex = null;
+
+  function openBookSelector() {
+    selectorPhase = 'book';
+    selectorTab = state.bookIndex < OT_COUNT ? 'ot' : 'nt';
+    bookSelector.classList.add('active');
+    renderBookList();
+  }
+
+  function renderBookList() {
+    clearChildren(bookSelectorBody);
+
+    var tabs = bookSelector.querySelectorAll('.tab');
+    tabs.forEach(function(t) { t.classList.toggle('active', t.dataset.tab === selectorTab); });
+
+    if (selectorPhase !== 'book') return;
+
+    var startIdx = selectorTab === 'ot' ? 0 : OT_COUNT;
+    var endIdx = selectorTab === 'ot' ? OT_COUNT : 66;
+
+    var grid = document.createElement('div');
+    grid.className = 'book-grid';
+
+    for (var i = startIdx; i < endIdx; i++) {
+      (function(idx) {
+        var item = document.createElement('div');
+        item.className = 'book-item';
+        item.textContent = getBookName(idx, state.lang);
+        item.addEventListener('click', function() {
+          selectorBookIndex = idx;
+          selectorPhase = 'chapter';
+          renderChapterGrid();
+        });
+        grid.appendChild(item);
+      })(i);
+    }
+    bookSelectorBody.appendChild(grid);
+  }
+
+  function renderChapterGrid() {
+    clearChildren(bookSelectorBody);
+    var count = getChapterCount(selectorBookIndex);
+
+    var label = document.createElement('div');
+    label.style.cssText = 'font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px;';
+    var backBtn = document.createElement('span');
+    backBtn.textContent = '\u2190 ';
+    backBtn.style.cssText = 'cursor:pointer;color:var(--text-dim);';
+    backBtn.addEventListener('click', function() {
+      selectorPhase = 'book';
+      renderBookList();
+    });
+    label.appendChild(backBtn);
+    label.appendChild(document.createTextNode(getBookName(selectorBookIndex, state.lang)));
+    bookSelectorBody.appendChild(label);
+
+    var grid = document.createElement('div');
+    grid.className = 'chapter-grid';
+    for (var i = 1; i <= count; i++) {
+      (function(ch) {
+        var item = document.createElement('div');
+        item.className = 'chapter-item';
+        item.textContent = ch;
+        item.addEventListener('click', function() {
+          state.bookIndex = selectorBookIndex;
+          state.chapter = ch;
+          bookSelector.classList.remove('active');
+          renderVerses();
+          mainContent.scrollTop = 0;
+        });
+        grid.appendChild(item);
+      })(i);
+    }
+    bookSelectorBody.appendChild(grid);
+  }
+
+  bookSelector.querySelectorAll('.tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      selectorTab = tab.dataset.tab;
+      selectorPhase = 'book';
+      renderBookList();
+    });
+  });
+
+  document.getElementById('bookSelectorClose').addEventListener('click', function() {
+    bookSelector.classList.remove('active');
+  });
+
+  bookChapterBtn.addEventListener('click', openBookSelector);
+
+  // ============================
+  // CHAPTER NAV
+  // ============================
+  document.getElementById('btnPrev').addEventListener('click', function() {
+    if (state.chapter > 1) {
+      state.chapter--;
+      renderVerses();
+      mainContent.scrollTop = 0;
+    }
+  });
+
+  document.getElementById('btnNext').addEventListener('click', function() {
+    if (state.chapter < getChapterCount(state.bookIndex)) {
+      state.chapter++;
+      renderVerses();
+      mainContent.scrollTop = 0;
+    }
+  });
+
+  // ============================
+  // ALL NOTES
+  // ============================
+  document.getElementById('allNotesClose').addEventListener('click', function() {
+    allNotesPanel.classList.remove('active');
+  });
+
+  function renderAllNotes() {
+    clearChildren(allNotesBody);
+
+    db.notes.toArray().then(function(allNotes) {
+      allNotes = allNotes.filter(function(n) { return n.text && n.text.trim(); });
+
+      if (allNotes.length === 0) {
+        var empty = document.createElement('div');
+        empty.className = 'note-empty';
+        empty.textContent = state.lang === 'ko' ? '아직 노트가 없습니다.' : 'No notes yet.';
+        allNotesBody.appendChild(empty);
+        return;
+      }
+
+      var sorted = allNotes.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+      var groups = {};
+      sorted.forEach(function(n) {
+        var d = n.date || 'undated';
+        if (!groups[d]) groups[d] = [];
+        groups[d].push(n);
+      });
+
+      Object.keys(groups).sort().reverse().forEach(function(date) {
+        var group = document.createElement('div');
+        group.className = 'all-notes-date-group';
+
+        var dateLabel = document.createElement('div');
+        dateLabel.className = 'all-notes-date';
+        dateLabel.textContent = date;
+        group.appendChild(dateLabel);
+
+        groups[date].forEach(function(n) {
+          var card = document.createElement('div');
+          card.className = 'all-notes-card';
+
+          var ref = document.createElement('div');
+          ref.className = 'all-notes-ref';
+          var bookIdx = parseInt(n.book, 10);
+          var chLabel = state.lang === 'ko' ? '장' : '';
+          var vRef = n.verse_start === n.verse_end ? ':' + n.verse_start : ':' + n.verse_start + '-' + n.verse_end;
+          ref.textContent = getBookName(bookIdx, state.lang) + ' ' + n.chapter + chLabel + vRef;
+
+          var preview = document.createElement('div');
+          preview.className = 'all-notes-preview';
+          preview.textContent = n.text;
+
+          card.appendChild(ref);
+          card.appendChild(preview);
+
+          card.addEventListener('click', function() {
+            allNotesPanel.classList.remove('active');
+            state.bookIndex = bookIdx;
+            state.chapter = n.chapter;
+            renderVerses();
+            setTimeout(function() {
+              var vs = [];
+              for (var v = n.verse_start; v <= n.verse_end; v++) vs.push(v);
+              openNotePanel(vs);
+            }, 100);
+          });
+
+          group.appendChild(card);
+        });
+
+        allNotesBody.appendChild(group);
+      });
+    });
+  }
+
+  // ============================
+  // SETTINGS PANEL
+  // ============================
+  document.getElementById('btnSettings').addEventListener('click', function(e) {
+    e.stopPropagation();
+    settingsPanel.classList.toggle('active');
+  });
+
+  document.addEventListener('click', function(e) {
+    if (settingsPanel.classList.contains('active') &&
+        !settingsPanel.contains(e.target) &&
+        e.target.id !== 'btnSettings' &&
+        !e.target.closest('#btnSettings')) {
+      settingsPanel.classList.remove('active');
+    }
+  });
+
+  mainContent.addEventListener('scroll', function() {
+    if (settingsPanel.classList.contains('active')) {
+      settingsPanel.classList.remove('active');
+    }
+  });
+
+  settingsPanel.addEventListener('click', function(e) { e.stopPropagation(); });
+
+  // Language toggle
+  document.getElementById('langKo').addEventListener('click', function() {
+    state.lang = 'ko';
+    this.classList.add('active');
+    document.getElementById('langEn').classList.remove('active');
+    renderVerses();
+    saveSettings();
+  });
+  document.getElementById('langEn').addEventListener('click', function() {
+    state.lang = 'en';
+    this.classList.add('active');
+    document.getElementById('langKo').classList.remove('active');
+    renderVerses();
+    saveSettings();
+  });
+
+  // Font selection
+  document.querySelectorAll('.font-option').forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      state.fontFamily = opt.dataset.font;
+      state.fontWeight = opt.dataset.weight;
+      document.querySelectorAll('.verse-text').forEach(function(el) {
+        el.style.fontFamily = state.fontFamily;
+        el.style.fontWeight = state.fontWeight;
+      });
+      document.querySelectorAll('.font-option').forEach(function(o) { o.classList.remove('selected'); });
+      opt.classList.add('selected');
+      saveSettings();
+    });
+  });
+
+  // Font size
+  function applyFontSize() {
+    document.querySelectorAll('.verse-text').forEach(function(el) {
+      el.style.fontSize = state.fontSize + 'px';
+    });
+    document.getElementById('fontSizeLabel').textContent = state.fontSize + 'px';
+    saveSettings();
+  }
+
+  document.getElementById('fontSizeDown').addEventListener('click', function() {
+    if (state.fontSize > 12) { state.fontSize -= 1; applyFontSize(); }
+  });
+  document.getElementById('fontSizeUp').addEventListener('click', function() {
+    if (state.fontSize < 24) { state.fontSize += 1; applyFontSize(); }
+  });
+
+  // Line height
+  document.getElementById('lineHeightDown').addEventListener('click', function() {
+    if (state.lineHeight > 1.4) {
+      state.lineHeight = Math.round((state.lineHeight - 0.1) * 10) / 10;
+      applyReadingSettings();
+    }
+  });
+  document.getElementById('lineHeightUp').addEventListener('click', function() {
+    if (state.lineHeight < 3.0) {
+      state.lineHeight = Math.round((state.lineHeight + 0.1) * 10) / 10;
+      applyReadingSettings();
+    }
+  });
+
+  // Verse padding
+  document.getElementById('versePaddingDown').addEventListener('click', function() {
+    if (state.versePadding > 0.2) {
+      state.versePadding = Math.round((state.versePadding - 0.2) * 10) / 10;
+      applyReadingSettings();
+    }
+  });
+  document.getElementById('versePaddingUp').addEventListener('click', function() {
+    if (state.versePadding < 2.5) {
+      state.versePadding = Math.round((state.versePadding + 0.2) * 10) / 10;
+      applyReadingSettings();
+    }
+  });
+
+  // Side margin
+  document.getElementById('sideMarginDown').addEventListener('click', function() {
+    if (state.sideMargin > 1) {
+      state.sideMargin = Math.round((state.sideMargin - 0.5) * 10) / 10;
+      applyReadingSettings();
+    }
+  });
+  document.getElementById('sideMarginUp').addEventListener('click', function() {
+    if (state.sideMargin < 6) {
+      state.sideMargin = Math.round((state.sideMargin + 0.5) * 10) / 10;
+      applyReadingSettings();
+    }
+  });
+
+  function applyReadingSettings() {
+    document.getElementById('lineHeightLabel').textContent = state.lineHeight.toFixed(1);
+    document.getElementById('versePaddingLabel').textContent = state.versePadding.toFixed(1) + 'rem';
+    document.getElementById('sideMarginLabel').textContent = state.sideMargin.toFixed(1) + 'rem';
+    applyReadingSettingsToDOM();
+    saveSettings();
+  }
+
+  function applyReadingSettingsToDOM() {
+    document.querySelectorAll('.verse-text').forEach(function(el) {
+      el.style.lineHeight = state.lineHeight;
+    });
+    document.querySelectorAll('.verse-block').forEach(function(el) {
+      el.style.marginBottom = state.versePadding + 'rem';
+    });
+    versesWrap.style.paddingLeft = state.sideMargin + 'rem';
+    versesWrap.style.paddingRight = state.sideMargin + 'rem';
+  }
+
+  // All notes from settings
+  document.getElementById('settingsAllNotes').addEventListener('click', function() {
+    settingsPanel.classList.remove('active');
+    renderAllNotes();
+    allNotesPanel.classList.add('active');
+  });
+
+  // ============================
+  // SCROLL HIDE/SHOW NAV
+  // ============================
+  var lastScrollTop = 0;
+  var navHidden = false;
+
+  mainContent.addEventListener('scroll', function() {
+    var st = mainContent.scrollTop;
+    if (state.selectedVerses.length > 0) { lastScrollTop = st; return; }
+
+    if (st > lastScrollTop && st > 80 && !navHidden) {
+      glassNav.style.transform = 'translateY(calc(100% + 20px))';
+      navHidden = true;
+    } else if (st < lastScrollTop && navHidden) {
+      glassNav.style.transform = 'translateY(0)';
+      navHidden = false;
+    }
+    lastScrollTop = st;
+  });
+
+  // ============================
+  // RESTORE UI STATE FROM SETTINGS
+  // ============================
+  function restoreUIState() {
+    if (state.lang === 'en') {
+      document.getElementById('langEn').classList.add('active');
+      document.getElementById('langKo').classList.remove('active');
+    }
+
+    document.querySelectorAll('.font-option').forEach(function(opt) {
+      if (opt.dataset.font === state.fontFamily) {
+        opt.classList.add('selected');
+      } else {
+        opt.classList.remove('selected');
+      }
+    });
+
+    document.getElementById('fontSizeLabel').textContent = state.fontSize + 'px';
+    document.getElementById('lineHeightLabel').textContent = state.lineHeight.toFixed(1);
+    document.getElementById('versePaddingLabel').textContent = state.versePadding.toFixed(1) + 'rem';
+    document.getElementById('sideMarginLabel').textContent = state.sideMargin.toFixed(1) + 'rem';
+  }
+
+  // ============================
+  // LOAD BIBLE DATA
+  // ============================
+  function showLoadError(msg) {
+    loadingText.style.display = 'none';
+    loadingSpinner.style.display = 'none';
+
+    var errDiv = document.createElement('div');
+    errDiv.className = 'loading-error';
+
+    var p1 = document.createElement('p');
+    p1.textContent = msg;
+    errDiv.appendChild(p1);
+
+    var p2 = document.createElement('p');
+    p2.style.marginTop = '12px';
+    p2.textContent = 'file:// protocol blocks fetch. Try a local server:';
+    errDiv.appendChild(p2);
+
+    var code = document.createElement('code');
+    code.textContent = 'cd bible-note-2026-03-16 && python3 -m http.server 8000';
+    errDiv.appendChild(code);
+
+    var p3 = document.createElement('p');
+    p3.style.marginTop = '8px';
+    var link = document.createElement('span');
+    link.style.color = 'var(--text)';
+    link.textContent = 'Then open http://localhost:8000';
+    p3.appendChild(link);
+    errDiv.appendChild(p3);
+
+    loadingScreen.appendChild(errDiv);
+  }
+
+  function init() {
+    loadSettings();
+
+    Promise.all([
+      fetch('./data/krv.json').then(function(r) {
+        if (!r.ok) throw new Error('KRV: ' + r.status);
+        return r.json();
+      }),
+      fetch('./data/kjv.json').then(function(r) {
+        if (!r.ok) throw new Error('KJV: ' + r.status);
+        return r.json();
+      })
+    ]).then(function(results) {
+      bibleKo = results[0];
+      bibleEn = results[1];
+
+      if (!bibleKo.books || bibleKo.books.length !== 66) {
+        throw new Error('KRV data invalid: expected 66 books, got ' + (bibleKo.books ? bibleKo.books.length : 0));
+      }
+      if (!bibleEn.books || bibleEn.books.length !== 66) {
+        throw new Error('KJV data invalid: expected 66 books, got ' + (bibleEn.books ? bibleEn.books.length : 0));
+      }
+
+      if (state.bookIndex < 0 || state.bookIndex >= 66) state.bookIndex = 0;
+      if (state.chapter < 1 || state.chapter > getChapterCount(state.bookIndex)) state.chapter = 1;
+
+      loadingScreen.classList.add('hidden');
+      setTimeout(function() { loadingScreen.style.display = 'none'; }, 400);
+
+      restoreUIState();
+      renderVerses();
+
+    }).catch(function(err) {
+      console.error('Failed to load Bible data:', err);
+      showLoadError('Failed to load Bible data: ' + err.message);
+    });
+  }
+
+  init();
+
+})();
+</script>
+</body>
+</html>

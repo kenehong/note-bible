@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Dark rounded-rect background -->
+  <rect width="512" height="512" rx="114" ry="114" fill="#1a1a1a"/>
+
+  <!-- Large superscript verse number "1" — top-left area -->
+  <text x="148" y="240" font-family="Georgia, 'Times New Roman', serif" font-weight="300"
+        font-size="220" fill="white" text-anchor="middle">1</text>
+
+  <!-- Horizontal text lines suggesting verse text -->
+  <line x1="210" y1="190" x2="380" y2="190" stroke="rgba(255,255,255,0.4)" stroke-width="8" stroke-linecap="round"/>
+  <line x1="210" y1="230" x2="360" y2="230" stroke="rgba(255,255,255,0.25)" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- Pen/pencil — angled, bottom-right area -->
+  <g transform="translate(340, 340) rotate(-45)">
+    <!-- Pen body -->
+    <rect x="-6" y="-70" width="12" height="90" rx="3" fill="white"/>
+    <!-- Pen tip -->
+    <polygon points="-6,20 6,20 0,36" fill="white"/>
+    <!-- Pen top cap -->
+    <rect x="-6" y="-78" width="12" height="12" rx="2" fill="rgba(255,255,255,0.5)"/>
+  </g>
+</svg>
