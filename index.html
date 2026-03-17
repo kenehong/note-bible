@@ -1016,6 +1016,63 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   }
 
   // ============================
+  // HISTORY API — handle system back button in PWA
+  // ============================
+  function pushNavState(screen) {
+    history.pushState({ screen: screen }, '');
+  }
+
+  window.addEventListener('popstate', function(e) {
+    var s = e.state;
+    // If note editor is open and typing
+    if (noteEditor.classList.contains('active')) {
+      if (editorIsTyping) {
+        // Stage 1: stop typing
+        noteEditorTextarea.blur();
+        editorIsTyping = false;
+        if (autoSaveTimer) clearTimeout(autoSaveTimer);
+        var text = noteEditorTextarea.value.trim();
+        if (text) { autoSave(); }
+        else if (editorNoteId) {
+          db.notes.delete(editorNoteId).then(function() { closeNoteEditor(); });
+          return;
+        }
+        // Re-push so next back closes editor
+        pushNavState('editor-view');
+        return;
+      }
+      // Stage 2: close editor
+      closeNoteEditor();
+      return;
+    }
+    // If note panel is open
+    if (notePanel.classList.contains('active')) {
+      closeNotePanel();
+      return;
+    }
+    // If book selector is open
+    if (bookSelector.classList.contains('active')) {
+      bookSelector.classList.remove('active');
+      return;
+    }
+    // If settings panel is open
+    if (settingsPanel.classList.contains('active')) {
+      settingsPanel.classList.remove('active');
+      return;
+    }
+    // If all notes is open
+    if (allNotesPanel.classList.contains('active')) {
+      allNotesPanel.classList.remove('active');
+      return;
+    }
+    // Nothing open — push state back so we don't exit app
+    pushNavState('main');
+  });
+
+  // Initial state
+  history.replaceState({ screen: 'main' }, '');
+
+  // ============================
   // FULL SCREEN NOTE EDITOR
   // ============================
   var editorIsTyping = false;
@@ -1036,14 +1093,14 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
       db.notes.get(noteId).then(function(note) {
         noteEditorTextarea.value = note ? (note.text || '') : '';
         noteEditor.classList.add('active');
-        // Don't auto-focus — show view mode first
         noteEditorTextarea.blur();
+        pushNavState('editor-view');
       });
     } else {
       noteEditorTextarea.value = '';
       noteEditor.classList.add('active');
-      // New note — go straight to typing
       editorIsTyping = true;
+      pushNavState('editor-typing');
       setTimeout(function() { noteEditorTextarea.focus(); }, 100);
     }
   }
@@ -1122,7 +1179,10 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 
   // Tap textarea → enter typing mode
   noteEditorTextarea.addEventListener('focus', function() {
-    editorIsTyping = true;
+    if (!editorIsTyping) {
+      editorIsTyping = true;
+      pushNavState('editor-typing');
+    }
   });
 
   // Back button — 2 stages
@@ -1205,6 +1265,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 
     noteOverlay.classList.add('active');
     notePanel.classList.add('active');
+    pushNavState('note-panel');
   }
 
   function makeNoteItem(n, sorted) {
