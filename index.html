@@ -1762,8 +1762,22 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
       loadingScreen.classList.add('hidden');
       setTimeout(function() { loadingScreen.style.display = 'none'; }, 400);
 
+      // Seed sample notes if DB is empty (for demo)
+      db.notes.count().then(function(count) {
+        if (count === 0) {
+          var now = new Date().toISOString();
+          return db.notes.bulkAdd([
+            { book: '0', chapter: 1, verse_start: 1, verse_end: 2, text: '#date:2026-03-15\nThe very beginning. God existed before everything.\n\n#date:2026-03-17\nRevisiting this passage — the weight of "In the beginning" hits differently today.', date: '2026-03-17', updated_at: now },
+            { book: '0', chapter: 1, verse_start: 3, verse_end: 4, text: '#date:2026-03-15\nLight was created before the sun. The Word itself is light.\n\nGod saw that it was good — He paused to appreciate His own work.', date: '2026-03-15', updated_at: now },
+            { book: '42', chapter: 1, verse_start: 1, verse_end: 3, text: '#date:2026-03-16\nSame opening as Genesis 1:1. The Word was with God. Jesus IS the Word.\n\nAll things were made through Him — nothing exists apart from Him.', date: '2026-03-16', updated_at: now },
+            { book: '18', chapter: 23, verse_start: 1, verse_end: 1, text: '#date:2026-03-14\nThe Lord is my shepherd. Not "was" or "will be" — IS.\n\nI shall not want. Spiritual fullness, not material.', date: '2026-03-14', updated_at: now }
+          ]);
+        }
+      }).then(function() {
+        renderVerses();
+      });
+
       restoreUIState();
-      renderVerses();
 
     }).catch(function(err) {
       console.error('Failed to load Bible data:', err);
