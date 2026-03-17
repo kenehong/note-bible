@@ -631,9 +631,9 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   </div>
 </div>
 
-<!-- NOTE PANEL (slide from right) -->
-<div class="note-overlay" id="noteOverlay"></div>
-<div class="note-panel" id="notePanel">
+<!-- NOTE PANEL (hidden — using full-screen editor instead) -->
+<div class="note-overlay" id="noteOverlay" style="display:none"></div>
+<div class="note-panel" id="notePanel" style="display:none">
   <div class="note-panel-header">
     <span class="ref" id="notePanelRef"></span>
     <button id="notePanelClose">Close</button>
@@ -1110,12 +1110,6 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
     noteEditorTextarea.blur();
     editorIsTyping = false;
     if (autoSaveTimer) clearTimeout(autoSaveTimer);
-    // Refresh
-    if (notePanel.classList.contains('active') && editorVerses) {
-      var v = editorVerses;
-      closeNotePanel();
-      openNotePanel(v);
-    }
     renderVerses();
     editorNoteId = null;
     editorVerses = null;
@@ -1210,7 +1204,30 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   });
 
   // ============================
-  // NOTE PANEL
+  // OPEN NOTE FOR VERSES — find existing or create new, go straight to editor
+  // ============================
+  function openNoteForVerses(verseNums) {
+    var sorted = verseNums.slice().sort(function(a, b) { return a - b; });
+
+    // Find overlapping notes for these verses
+    db.notes.where({ book: String(state.bookIndex), chapter: state.chapter }).toArray().then(function(chapterNotes) {
+      var matching = chapterNotes.filter(function(n) {
+        return sorted.some(function(v) { return v >= n.verse_start && v <= n.verse_end; });
+      });
+      matching.sort(function(a, b) { return (b.updated_at || b.date).localeCompare(a.updated_at || a.date); });
+
+      if (matching.length > 0) {
+        // Open most recent matching note in editor
+        openNoteEditor(matching[0].id, sorted);
+      } else {
+        // No existing note — open blank editor
+        openNoteEditor(null, sorted);
+      }
+    });
+  }
+
+  // ============================
+  // NOTE PANEL (kept for All Notes navigation)
   // ============================
   function openNotePanel(verseNums) {
     var sorted = verseNums.slice().sort(function(a, b) { return a - b; });
@@ -1308,7 +1325,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   // ============================
   document.getElementById('actionNoteBtn').addEventListener('click', function() {
     if (state.selectedVerses.length > 0) {
-      openNotePanel(state.selectedVerses.slice());
+      openNoteForVerses(state.selectedVerses.slice());
     }
   });
   document.getElementById('actionCancelBtn').addEventListener('click', clearSelection);
@@ -1493,7 +1510,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
             setTimeout(function() {
               var vs = [];
               for (var v = n.verse_start; v <= n.verse_end; v++) vs.push(v);
-              openNotePanel(vs);
+              openNoteEditor(n.id, vs);
             }, 100);
           });
 
