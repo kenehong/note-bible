@@ -4,8 +4,8 @@
   "description": "미니멀 성경 노트",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#111111",
+  "theme_color": "#111111",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
   ]

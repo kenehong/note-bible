@@ -6,9 +6,8 @@
 <title>Note Bible</title>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#111111">
 <meta name="apple-mobile-web-app-title" content="Note Bible">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -19,34 +18,18 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #ffffff;
-  --surface: #f7f7f7;
-  --elevated: #ffffff;
-  --text: #1a1a1a;
-  --text-dim: #888;
-  --text-muted: #bbb;
-  --border: #e5e5e5;
-  --divider: #f0f0f0;
-  --accent: #333;
-  --accent-subtle: rgba(0,0,0,0.04);
-  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --bg: #111111;
+  --surface: #1a1a1a;
+  --elevated: #222222;
+  --text: #e0e0e0;
+  --text-dim: #777;
+  --text-muted: #555;
+  --border: #2a2a2a;
+  --divider: #1e1e1e;
+  --accent: #ddd;
+  --accent-subtle: rgba(255,255,255,0.05);
+  --shadow: 0 2px 12px rgba(0,0,0,0.3);
   --font: 'Noto Sans KR', -apple-system, 'Pretendard', 'Segoe UI', system-ui, sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #111;
-    --surface: #1a1a1a;
-    --elevated: #222;
-    --text: #e0e0e0;
-    --text-dim: #777;
-    --text-muted: #555;
-    --border: #2a2a2a;
-    --divider: #1e1e1e;
-    --accent: #ddd;
-    --accent-subtle: rgba(255,255,255,0.05);
-    --shadow: 0 2px 12px rgba(0,0,0,0.3);
-  }
 }
 
 html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); -webkit-tap-highlight-color: transparent; }
@@ -91,53 +74,37 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 .glass-nav-inner {
   pointer-events: auto;
   display: flex; align-items: center; gap: 4px;
-  background: rgba(255,255,255,0.82);
+  background: rgba(30,30,30,0.85);
   backdrop-filter: saturate(180%) blur(24px); -webkit-backdrop-filter: saturate(180%) blur(24px);
-  border: 0.5px solid rgba(0,0,0,0.08);
+  border: 0.5px solid rgba(255,255,255,0.1);
   border-radius: 24px;
   padding: 6px 6px;
-  box-shadow: 0 2px 20px rgba(0,0,0,0.08), 0 0.5px 0 rgba(255,255,255,0.5) inset;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.3);
   max-width: 300px; width: auto;
-}
-@media (prefers-color-scheme: dark) {
-  .glass-nav-inner {
-    background: rgba(30,30,30,0.85);
-    border-color: rgba(255,255,255,0.1);
-    box-shadow: 0 2px 20px rgba(0,0,0,0.3);
-  }
 }
 .glass-nav-btn {
   width: 42px; height: 42px; flex: 0 0 42px;
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font); font-size: 16px; font-weight: 400;
-  color: rgba(0,0,0,0.35); background: transparent; border: none;
+  color: rgba(255,255,255,0.45); background: transparent; border: none;
   cursor: pointer; border-radius: 50%;
   transition: transform 0.15s cubic-bezier(0.2,0,0,1), background 0.2s, color 0.15s;
   -webkit-user-select: none; user-select: none;
 }
 .glass-nav-btn:hover {
-  background: rgba(0,0,0,0.05); color: rgba(0,0,0,0.7);
+  background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.85);
 }
 .glass-nav-btn:active {
   transform: scale(0.9);
-  background: rgba(0,0,0,0.08);
-}
-@media (prefers-color-scheme: dark) {
-  .glass-nav-btn { color: rgba(255,255,255,0.45); }
-  .glass-nav-btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.85); }
-  .glass-nav-btn:active { background: rgba(255,255,255,0.12); }
+  background: rgba(255,255,255,0.12);
 }
 .glass-nav-btn.chapter-btn {
   flex: 0 1 auto; width: auto; border-radius: 18px;
-  font-size: 14px; font-weight: 500; color: rgba(0,0,0,0.8);
+  font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.9);
   letter-spacing: -0.01em;
   padding: 0 12px; white-space: nowrap;
 }
-.glass-nav-btn.chapter-btn:hover { background: rgba(0,0,0,0.04); }
-@media (prefers-color-scheme: dark) {
-  .glass-nav-btn.chapter-btn { color: rgba(255,255,255,0.9); }
-  .glass-nav-btn.chapter-btn:hover { background: rgba(255,255,255,0.06); }
-}
+.glass-nav-btn.chapter-btn:hover { background: rgba(255,255,255,0.06); }
 .glass-nav-btn:disabled {
   opacity: 0.2; cursor: default; transform: none;
 }
@@ -146,28 +113,27 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 .main-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; position: relative; scrollbar-width: none; }
 .main-content::-webkit-scrollbar { display: none; }
 
-/* Reading focus gradient */
-.main-content::before,
-.main-content::after {
-  content: ''; position: sticky; left: 0; right: 0; height: 140px;
-  display: block; z-index: 5; pointer-events: none;
+/* Reading focus gradients — fixed overlays to avoid scroll gaps */
+.gradient-top, .gradient-bottom {
+  position: fixed; left: 0; right: 0; height: 140px;
+  z-index: 5; pointer-events: none;
+  max-width: 900px; margin: 0 auto;
 }
-.main-content::before {
+.gradient-top {
   top: 0;
-  background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+  background: linear-gradient(to bottom, #111111 0%, transparent 100%);
 }
-.main-content::after {
+.gradient-bottom {
   bottom: 0;
-  background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
-  margin-top: -140px;
+  background: linear-gradient(to top, #111111 0%, #111111 20%, transparent 100%);
 }
 
 /* === VERSE DISPLAY === */
 .verses-wrap {
-  padding: 30vh 3rem 6rem;
+  padding: 30vh 3rem 10rem;
 }
 @media (max-width: 768px) {
-  .verses-wrap { padding: 28vh 1.75rem 6rem; }
+  .verses-wrap { padding: 28vh 1.75rem 10rem; }
 }
 
 .verse-block {
@@ -193,19 +159,13 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 .verse-text:active { transform: scale(0.985); }
 .verse-text:hover { background: var(--accent-subtle); }
 .verse-text.selected {
-  background: rgba(0,0,0,0.06);
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.04);
-}
-@media (prefers-color-scheme: dark) {
-  .verse-text.selected {
-    background: rgba(255,255,255,0.08);
-    box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
-  }
+  background: rgba(255,255,255,0.08);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
 }
 @keyframes selectPulse {
-  0% { background: rgba(0,0,0,0); }
-  50% { background: rgba(0,0,0,0.07); }
-  100% { background: rgba(0,0,0,0.04); }
+  0% { background: rgba(255,255,255,0); }
+  50% { background: rgba(255,255,255,0.1); }
+  100% { background: rgba(255,255,255,0.06); }
 }
 .verse-text.just-selected { animation: selectPulse 0.4s ease-out; }
 
@@ -231,12 +191,9 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 }
 .settings-panel-inner {
   background: var(--elevated); border: 1px solid var(--border); border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
   max-width: 380px; width: 100%; overflow: hidden;
   max-height: 60vh; overflow-y: auto;
-}
-@media (prefers-color-scheme: dark) {
-  .settings-panel-inner { box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
 }
 .settings-section {
   padding: 12px 16px; border-bottom: 1px solid var(--divider);
@@ -285,27 +242,17 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 .action-bar-inner {
   display: flex; align-items: center; gap: 8px;
   max-width: 360px; width: 100%;
-  background: rgba(255,255,255,0.82);
+  background: rgba(30,30,30,0.85);
   backdrop-filter: saturate(180%) blur(24px); -webkit-backdrop-filter: saturate(180%) blur(24px);
-  border: 0.5px solid rgba(0,0,0,0.08);
+  border: 0.5px solid rgba(255,255,255,0.1);
   border-radius: 24px;
   padding: 8px 8px 8px 18px;
-  box-shadow: 0 2px 20px rgba(0,0,0,0.08), 0 0.5px 0 rgba(255,255,255,0.5) inset;
-}
-@media (prefers-color-scheme: dark) {
-  .action-bar-inner {
-    background: rgba(30,30,30,0.85);
-    border-color: rgba(255,255,255,0.1);
-    box-shadow: 0 2px 20px rgba(0,0,0,0.3);
-  }
+  box-shadow: 0 2px 20px rgba(0,0,0,0.3);
 }
 .action-bar .action-ref {
-  flex: 1; font-size: 13px; font-weight: 500; color: rgba(0,0,0,0.7);
+  flex: 1; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.8);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   letter-spacing: -0.01em;
-}
-@media (prefers-color-scheme: dark) {
-  .action-bar .action-ref { color: rgba(255,255,255,0.8); }
 }
 .action-bar button {
   font-family: var(--font); font-size: 13px; font-weight: 500;
@@ -314,14 +261,10 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 }
 .action-bar button:active { transform: scale(0.92); }
 .action-bar .action-note-btn {
-  background: rgba(0,0,0,0.85); border: none; color: #fff;
+  background: rgba(255,255,255,0.9); border: none; color: #111;
 }
 .action-bar .action-cancel-btn {
-  background: rgba(0,0,0,0.06); border: none; color: rgba(0,0,0,0.4);
-}
-@media (prefers-color-scheme: dark) {
-  .action-bar .action-note-btn { background: rgba(255,255,255,0.9); color: #111; }
-  .action-bar .action-cancel-btn { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
+  background: rgba(255,255,255,0.08); border: none; color: rgba(255,255,255,0.5);
 }
 
 /* === SLIDE NOTE PANEL === */
@@ -339,7 +282,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   transform: translateX(100%);
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex; flex-direction: column;
-  box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+  box-shadow: -4px 0 20px rgba(0,0,0,0.3);
 }
 .note-panel.active { transform: translateX(0); }
 
@@ -393,7 +336,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   transition: background 0.15s;
 }
 .note-item-inner:hover { background: var(--accent-subtle); }
-.note-item-editing .note-content { display: none; }
+.note-item-editing .note-rendered { display: none; }
 .note-item-editing .note-item-inner { cursor: default; background: none; }
 .note-edit-textarea {
   width: 100%; min-height: 80px; resize: none;
@@ -424,13 +367,77 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   font-size: 11px; font-weight: 500; color: var(--text-muted); margin-bottom: 10px;
   letter-spacing: 0.03em;
 }
-.note-content {
+.note-rendered {
   font-size: 14px; line-height: 1.85; color: var(--text); white-space: pre-wrap;
   padding: 0 4px;
 }
 
 .note-empty {
   text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 13px; line-height: 1.6;
+}
+
+/* Rendered #date divider inside notes */
+.note-date-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 1.25rem 0;
+}
+.note-date-divider::before,
+.note-date-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.note-date-divider span {
+  font-size: 11px; font-weight: 500; color: var(--text-muted);
+  letter-spacing: 0.03em; white-space: nowrap;
+}
+
+/* === FULL SCREEN NOTE EDITOR === */
+.note-editor {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.note-editor.active { transform: translateY(0); }
+
+.note-editor-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--divider);
+  flex-shrink: 0;
+}
+.note-editor-back {
+  font-family: var(--font); font-size: 13px; font-weight: 400;
+  color: var(--text-dim); background: none; border: none;
+  cursor: pointer; padding: 8px 4px;
+}
+.note-editor-save {
+  font-family: var(--font); font-size: 13px; font-weight: 500;
+  color: #111; background: rgba(255,255,255,0.9); border: none;
+  border-radius: 8px; padding: 8px 18px; cursor: pointer;
+  transition: transform 0.12s;
+}
+.note-editor-save:active { transform: scale(0.94); }
+.note-editor-ref {
+  font-size: 12px; color: var(--text-muted); padding: 10px 20px 0;
+  letter-spacing: 0.01em; flex-shrink: 0;
+}
+.note-editor-body {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.note-editor-textarea {
+  flex: 1; width: 100%; resize: none;
+  font-family: var(--font); font-size: 16px; line-height: 1.9; font-weight: 300;
+  padding: 16px 20px 4rem;
+  background: transparent; color: var(--text);
+  border: none; outline: none;
+  letter-spacing: -0.008em;
+}
+.note-editor-textarea::placeholder { color: var(--text-muted); }
+@media (max-width: 768px) {
+  .note-editor-textarea { padding: 16px 1.75rem 4rem; }
+  .note-editor-ref { padding: 10px 1.75rem 0; }
 }
 
 /* === BOOK SELECTOR OVERLAY === */
@@ -519,6 +526,10 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   <div class="loading-spinner" id="loadingSpinner"></div>
   <div class="loading-text" id="loadingText">Loading Bible data...</div>
 </div>
+
+<!-- READING FOCUS GRADIENTS (fixed overlays) -->
+<div class="gradient-top"></div>
+<div class="gradient-bottom"></div>
 
 <!-- SETTINGS PANEL -->
 <div class="settings-panel" id="settingsPanel">
@@ -618,7 +629,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   </div>
 </div>
 
-<!-- NOTE PANEL -->
+<!-- NOTE PANEL (slide from right) -->
 <div class="note-overlay" id="noteOverlay"></div>
 <div class="note-panel" id="notePanel">
   <div class="note-panel-header">
@@ -626,6 +637,18 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
     <button id="notePanelClose">닫기</button>
   </div>
   <div class="note-panel-body" id="notePanelBody"></div>
+</div>
+
+<!-- FULL SCREEN NOTE EDITOR -->
+<div class="note-editor" id="noteEditor">
+  <div class="note-editor-header">
+    <button class="note-editor-back" id="noteEditorBack">&#8592; 돌아가기</button>
+    <button class="note-editor-save" id="noteEditorSave">저장</button>
+  </div>
+  <div class="note-editor-ref" id="noteEditorRef"></div>
+  <div class="note-editor-body">
+    <textarea class="note-editor-textarea" id="noteEditorTextarea" placeholder="묵상을 기록하세요..."></textarea>
+  </div>
 </div>
 
 <!-- BOOK SELECTOR -->
@@ -702,6 +725,10 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
     sideMargin: 3
   };
 
+  // Editor state
+  var editorNoteId = null;
+  var editorVerses = null;
+
   // ============================
   // DOM REFS
   // ============================
@@ -723,12 +750,62 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   var loadingScreen = document.getElementById('loadingScreen');
   var loadingText = document.getElementById('loadingText');
   var loadingSpinner = document.getElementById('loadingSpinner');
+  var noteEditor = document.getElementById('noteEditor');
+  var noteEditorBack = document.getElementById('noteEditorBack');
+  var noteEditorSave = document.getElementById('noteEditorSave');
+  var noteEditorRef = document.getElementById('noteEditorRef');
+  var noteEditorTextarea = document.getElementById('noteEditorTextarea');
 
   // ============================
   // UTIL: clear all children
   // ============================
   function clearChildren(el) {
     while (el.firstChild) el.removeChild(el.firstChild);
+  }
+
+  // ============================
+  // UTIL: format date in Korean
+  // ============================
+  function formatDateKorean(dateStr) {
+    var parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    return parseInt(parts[0], 10) + '년 ' + parseInt(parts[1], 10) + '월 ' + parseInt(parts[2], 10) + '일';
+  }
+
+  // ============================
+  // UTIL: render note text with #date parsing
+  // ============================
+  function renderNoteText(text, container) {
+    clearChildren(container);
+    if (!text) return;
+
+    var lines = text.split('\n');
+    var currentText = [];
+
+    function flushText() {
+      if (currentText.length > 0) {
+        var span = document.createElement('span');
+        span.textContent = currentText.join('\n');
+        container.appendChild(span);
+        currentText = [];
+      }
+    }
+
+    for (var i = 0; i < lines.length; i++) {
+      var match = lines[i].match(/^#date:(\d{4}-\d{2}-\d{2})$/);
+      if (match) {
+        flushText();
+        var divider = document.createElement('div');
+        divider.className = 'note-date-divider';
+        var dateSpan = document.createElement('span');
+        dateSpan.textContent = formatDateKorean(match[1]);
+        divider.appendChild(dateSpan);
+        container.appendChild(divider);
+      } else {
+        currentText.push(lines[i]);
+      }
+    }
+    flushText();
   }
 
   // ============================
@@ -937,6 +1014,137 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   }
 
   // ============================
+  // FULL SCREEN NOTE EDITOR
+  // ============================
+  function openNoteEditor(noteId, verseNums) {
+    editorNoteId = noteId;
+    editorVerses = verseNums;
+
+    var ref = buildVerseRef(state.bookIndex, state.chapter, verseNums, state.lang);
+    noteEditorRef.textContent = ref;
+
+    if (noteId) {
+      db.notes.get(noteId).then(function(note) {
+        if (note) {
+          noteEditorTextarea.value = note.text || '';
+        } else {
+          noteEditorTextarea.value = '';
+        }
+        noteEditor.classList.add('active');
+        setTimeout(function() {
+          noteEditorTextarea.focus();
+          // Move cursor to end
+          noteEditorTextarea.selectionStart = noteEditorTextarea.value.length;
+          noteEditorTextarea.selectionEnd = noteEditorTextarea.value.length;
+        }, 100);
+      });
+    } else {
+      noteEditorTextarea.value = '';
+      noteEditor.classList.add('active');
+      setTimeout(function() { noteEditorTextarea.focus(); }, 100);
+    }
+  }
+
+  function closeNoteEditor() {
+    noteEditor.classList.remove('active');
+    editorNoteId = null;
+    editorVerses = null;
+  }
+
+  function saveNoteEditor() {
+    var text = noteEditorTextarea.value;
+    var now = new Date().toISOString();
+    var today = now.split('T')[0];
+
+    if (editorNoteId) {
+      // Update existing
+      db.notes.update(editorNoteId, {
+        text: text,
+        date: today,
+        updated_at: now
+      }).then(function() {
+        closeNoteEditor();
+        // Refresh note panel if open
+        if (notePanel.classList.contains('active') && editorVerses) {
+          closeNotePanel();
+          openNotePanel(editorVerses);
+        }
+        renderVerses();
+      });
+    } else if (editorVerses) {
+      // Create new note
+      var sorted = editorVerses.slice().sort(function(a, b) { return a - b; });
+      db.notes.add({
+        book: String(state.bookIndex),
+        chapter: state.chapter,
+        verse_start: sorted[0],
+        verse_end: sorted[sorted.length - 1],
+        text: text,
+        date: today,
+        updated_at: now
+      }).then(function() {
+        closeNoteEditor();
+        if (notePanel.classList.contains('active')) {
+          closeNotePanel();
+          openNotePanel(sorted);
+        }
+        renderVerses();
+      });
+    }
+  }
+
+  // #date replacement in textarea
+  noteEditorTextarea.addEventListener('input', function() {
+    var ta = noteEditorTextarea;
+    var val = ta.value;
+    var pos = ta.selectionStart;
+
+    // Check if user just typed "#date " or "#date\n"
+    var before = val.substring(0, pos);
+    var dateMatch = before.match(/#date[\s\n]$/);
+    if (dateMatch) {
+      var today = new Date();
+      var dateStr = today.getFullYear() + '-' +
+        String(today.getMonth() + 1).padStart(2, '0') + '-' +
+        String(today.getDate()).padStart(2, '0');
+      var replacement = '#date:' + dateStr;
+      var matchStart = pos - dateMatch[0].length;
+      var newVal = val.substring(0, matchStart) + replacement + '\n' + val.substring(pos);
+      ta.value = newVal;
+      var newPos = matchStart + replacement.length + 1;
+      ta.selectionStart = newPos;
+      ta.selectionEnd = newPos;
+    }
+  });
+
+  noteEditorBack.addEventListener('click', function() {
+    // Auto-save on back if there's content
+    var text = noteEditorTextarea.value.trim();
+    if (text && editorNoteId) {
+      saveNoteEditor();
+    } else if (text && editorVerses) {
+      saveNoteEditor();
+    } else {
+      // If empty and was a new note, just close (don't save empty)
+      if (editorNoteId && !text) {
+        // Delete the empty note
+        db.notes.delete(editorNoteId).then(function() {
+          closeNoteEditor();
+          if (notePanel.classList.contains('active') && editorVerses) {
+            closeNotePanel();
+            openNotePanel(editorVerses);
+          }
+          renderVerses();
+        });
+        return;
+      }
+      closeNoteEditor();
+    }
+  });
+
+  noteEditorSave.addEventListener('click', saveNoteEditor);
+
+  // ============================
   // NOTE PANEL
   // ============================
   function openNotePanel(verseNums) {
@@ -978,31 +1186,15 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
       addBtn.className = 'note-add-btn';
       addBtn.textContent = '+ 노트 추가';
       addBtn.addEventListener('click', function() {
-        var today = new Date().toISOString().split('T')[0];
-        var now = new Date().toISOString();
-        db.notes.add({
-          book: String(state.bookIndex),
-          chapter: state.chapter,
-          verse_start: sorted[0],
-          verse_end: sorted[sorted.length - 1],
-          text: '',
-          date: today,
-          updated_at: now
-        }).then(function() {
-          closeNotePanel();
-          openNotePanel(sorted);
-          setTimeout(function() {
-            var items = notePanelBody.querySelectorAll('.note-item-inner');
-            var last = items[items.length - 1];
-            if (last) last.click();
-          }, 150);
-        });
+        // Open full screen editor for a new note
+        openNoteEditor(null, sorted);
       });
       footer.appendChild(addBtn);
       notePanelBody.appendChild(footer);
 
+      // If no notes yet, go directly to editor
       if (verseNotes.length === 0) {
-        addBtn.click();
+        openNoteEditor(null, sorted);
       }
     });
 
@@ -1019,75 +1211,18 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
     dateEl.className = 'note-date';
     var rangeStr = n.verse_start === n.verse_end ? ':' + n.verse_start : ':' + n.verse_start + '-' + n.verse_end;
     dateEl.textContent = n.date + '  \u00B7  ' + rangeStr;
-    var content = document.createElement('div');
-    content.className = 'note-content';
-    content.textContent = n.text;
+
+    var rendered = document.createElement('div');
+    rendered.className = 'note-rendered';
+    renderNoteText(n.text, rendered);
+
     inner.appendChild(dateEl);
-    inner.appendChild(content);
+    inner.appendChild(rendered);
     item.appendChild(inner);
 
+    // Tap note to open full-screen editor
     inner.addEventListener('click', function() {
-      if (item.classList.contains('note-item-editing')) return;
-      item.classList.add('note-item-editing');
-
-      var ta = document.createElement('textarea');
-      ta.className = 'note-edit-textarea';
-      ta.value = n.text;
-      var actions = document.createElement('div');
-      actions.className = 'note-edit-actions';
-
-      var deleteBtn = document.createElement('button');
-      deleteBtn.className = 'edit-delete';
-      deleteBtn.textContent = '삭제';
-      var spacer = document.createElement('div');
-      spacer.style.flex = '1';
-      var cancelBtn = document.createElement('button');
-      cancelBtn.className = 'edit-cancel';
-      cancelBtn.textContent = '취소';
-      var saveBtn = document.createElement('button');
-      saveBtn.className = 'edit-save';
-      saveBtn.textContent = '저장';
-
-      actions.appendChild(deleteBtn);
-      actions.appendChild(spacer);
-      actions.appendChild(cancelBtn);
-      actions.appendChild(saveBtn);
-
-      item.appendChild(ta);
-      item.appendChild(actions);
-      setTimeout(function() { ta.focus(); }, 50);
-
-      cancelBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        item.classList.remove('note-item-editing');
-        item.removeChild(ta);
-        item.removeChild(actions);
-      });
-
-      saveBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var newText = ta.value.trim();
-        if (!newText) return;
-        var now = new Date().toISOString();
-        db.notes.update(n.id, {
-          text: newText,
-          date: new Date().toISOString().split('T')[0],
-          updated_at: now
-        }).then(function() {
-          closeNotePanel();
-          openNotePanel(sorted);
-          renderVerses();
-        });
-      });
-
-      deleteBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        db.notes.delete(n.id).then(function() {
-          closeNotePanel();
-          openNotePanel(sorted);
-          renderVerses();
-        });
-      });
+      openNoteEditor(n.id, sorted);
     });
 
     return item;
@@ -1277,7 +1412,9 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 
           var preview = document.createElement('div');
           preview.className = 'all-notes-preview';
-          preview.textContent = n.text;
+          // Strip #date: lines for preview
+          var previewText = (n.text || '').replace(/#date:\d{4}-\d{2}-\d{2}/g, '').trim();
+          preview.textContent = previewText;
 
           card.appendChild(ref);
           card.appendChild(preview);
@@ -1505,7 +1642,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
     errDiv.appendChild(p2);
 
     var code = document.createElement('code');
-    code.textContent = 'cd bible-note-2026-03-16 && python3 -m http.server 8000';
+    code.textContent = 'cd note-bible && python3 -m http.server 8000';
     errDiv.appendChild(code);
 
     var p3 = document.createElement('p');
