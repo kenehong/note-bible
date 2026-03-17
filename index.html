@@ -542,7 +542,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
     </div>
     <div class="settings-section">
       <div class="settings-label">Font</div>
-      <div class="font-option selected" data-font="'Noto Sans KR', sans-serif" data-weight="300">
+      <div class="font-option" data-font="'Noto Sans KR', sans-serif" data-weight="300">
         <span class="font-name">Noto Sans KR Light</span>
         <span class="font-preview" style="font-family:'Noto Sans KR';font-weight:300;">태초에 하나님이 천지를</span>
       </div>
@@ -554,7 +554,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
         <span class="font-name">고운돋움</span>
         <span class="font-preview" style="font-family:'Gowun Dodum';font-weight:400;">태초에 하나님이 천지를</span>
       </div>
-      <div class="font-option" data-font="'Nanum Myeongjo', serif" data-weight="400">
+      <div class="font-option selected" data-font="'Nanum Myeongjo', serif" data-weight="400">
         <span class="font-name">나눔명조</span>
         <span class="font-preview" style="font-family:'Nanum Myeongjo';font-weight:400;">태초에 하나님이 천지를</span>
       </div>
@@ -567,7 +567,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
       <div class="settings-label">Size</div>
       <div class="settings-row">
         <button class="settings-btn" id="fontSizeDown" style="flex:0 0 44px;">A-</button>
-        <span id="fontSizeLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">16px</span>
+        <span id="fontSizeLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">19px</span>
         <button class="settings-btn" id="fontSizeUp" style="flex:0 0 44px;">A+</button>
       </div>
     </div>
@@ -575,7 +575,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
       <div class="settings-label">Line Spacing</div>
       <div class="settings-row">
         <button class="settings-btn" id="lineHeightDown">−</button>
-        <span id="lineHeightLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">1.9</span>
+        <span id="lineHeightLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">1.8</span>
         <button class="settings-btn" id="lineHeightUp">+</button>
       </div>
     </div>
@@ -583,7 +583,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
       <div class="settings-label">Verse Gap</div>
       <div class="settings-row">
         <button class="settings-btn" id="versePaddingDown">−</button>
-        <span id="versePaddingLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">1rem</span>
+        <span id="versePaddingLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">1.4rem</span>
         <button class="settings-btn" id="versePaddingUp">+</button>
       </div>
     </div>
@@ -591,7 +591,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
       <div class="settings-label">Margin</div>
       <div class="settings-row">
         <button class="settings-btn" id="sideMarginDown">−</button>
-        <span id="sideMarginLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">3rem</span>
+        <span id="sideMarginLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">2.0rem</span>
         <button class="settings-btn" id="sideMarginUp">+</button>
       </div>
     </div>
@@ -716,12 +716,12 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
     chapter: 1,
     lang: 'ko',
     selectedVerses: [],
-    fontFamily: "'Noto Sans KR', sans-serif",
-    fontWeight: '300',
-    fontSize: 16,
-    lineHeight: 1.9,
-    versePadding: 1,
-    sideMargin: 3
+    fontFamily: "'Nanum Myeongjo', serif",
+    fontWeight: '400',
+    fontSize: 19,
+    lineHeight: 1.8,
+    versePadding: 1.4,
+    sideMargin: 2
   };
 
   // Editor state
@@ -985,7 +985,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
         txt.dataset.verse = verseNum;
         txt.style.fontFamily = state.fontFamily;
         txt.style.fontWeight = state.fontWeight;
-        if (state.fontSize !== 16) txt.style.fontSize = state.fontSize + 'px';
+        txt.style.fontSize = state.fontSize + 'px';
         txt.style.lineHeight = state.lineHeight;
 
         txt.addEventListener('click', function() {
