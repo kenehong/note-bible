@@ -32,7 +32,6 @@
   --font: 'Noto Sans KR', -apple-system, 'Pretendard', 'Segoe UI', system-ui, sans-serif;
 }
 
-html { color-scheme: dark; }
 html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); -webkit-tap-highlight-color: transparent; }
 
 body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; height: 100dvh; overflow: hidden; }
@@ -377,15 +376,18 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 13px; line-height: 1.6;
 }
 
-/* Rendered #date — minimal timestamp */
+/* Rendered #date divider inside notes */
 .note-date-divider {
-  margin: 1.5rem 0 0.75rem;
+  display: flex; align-items: center; gap: 12px;
+  margin: 1.25rem 0;
+}
+.note-date-divider::before,
+.note-date-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
 }
 .note-date-divider span {
-  font-family: 'IBM Plex Sans KR', 'SF Mono', ui-monospace, monospace;
-  font-size: 11px; font-weight: 400; color: var(--text-muted);
-  letter-spacing: 0.04em;
-  opacity: 0.6;
+  font-size: 11px; font-weight: 500; color: var(--text-muted);
+  letter-spacing: 0.03em; white-space: nowrap;
 }
 
 /* === FULL SCREEN NOTE EDITOR === */
@@ -405,18 +407,17 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   flex-shrink: 0;
 }
 .note-editor-back {
-  font-family: var(--font); font-size: 18px; font-weight: 300;
+  font-family: var(--font); font-size: 13px; font-weight: 400;
   color: var(--text-dim); background: none; border: none;
-  cursor: pointer; padding: 8px 12px;
+  cursor: pointer; padding: 8px 4px;
+}
+.note-editor-save {
+  font-family: var(--font); font-size: 13px; font-weight: 500;
+  color: #111; background: rgba(255,255,255,0.9); border: none;
+  border-radius: 8px; padding: 8px 18px; cursor: pointer;
   transition: transform 0.12s;
 }
-.note-editor-back:active { transform: scale(0.9); }
-.note-editor-status {
-  font-size: 11px; font-weight: 400; color: var(--text-muted);
-  letter-spacing: 0.02em;
-  opacity: 0; transition: opacity 0.3s;
-}
-.note-editor-status.visible { opacity: 1; }
+.note-editor-save:active { transform: scale(0.94); }
 .note-editor-ref {
   font-size: 12px; color: var(--text-muted); padding: 10px 20px 0;
   letter-spacing: 0.01em; flex-shrink: 0;
@@ -536,63 +537,63 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
     <div class="settings-section">
       <div class="settings-label">Language</div>
       <div class="settings-row">
-        <button class="settings-btn active" id="langKo">한글</button>
-        <button class="settings-btn" id="langEn">English</button>
+        <button class="settings-btn" id="langKo">Korean</button>
+        <button class="settings-btn active" id="langEn">English</button>
       </div>
     </div>
     <div class="settings-section">
       <div class="settings-label">Font</div>
-      <div class="font-option" data-font="'Noto Sans KR', sans-serif" data-weight="300">
+      <div class="font-option selected" data-font="'Noto Sans KR', sans-serif" data-weight="300">
         <span class="font-name">Noto Sans KR Light</span>
-        <span class="font-preview" style="font-family:'Noto Sans KR';font-weight:300;">태초에 하나님이 천지를</span>
+        <span class="font-preview" style="font-family:'Noto Sans KR';font-weight:300;">In the beginning God created</span>
       </div>
       <div class="font-option" data-font="'IBM Plex Sans KR', sans-serif" data-weight="300">
         <span class="font-name">IBM Plex Sans KR</span>
-        <span class="font-preview" style="font-family:'IBM Plex Sans KR';font-weight:300;">태초에 하나님이 천지를</span>
+        <span class="font-preview" style="font-family:'IBM Plex Sans KR';font-weight:300;">In the beginning God created</span>
       </div>
       <div class="font-option" data-font="'Gowun Dodum', sans-serif" data-weight="400">
-        <span class="font-name">고운돋움</span>
-        <span class="font-preview" style="font-family:'Gowun Dodum';font-weight:400;">태초에 하나님이 천지를</span>
+        <span class="font-name">Gowun Dodum</span>
+        <span class="font-preview" style="font-family:'Gowun Dodum';font-weight:400;">In the beginning God created</span>
       </div>
-      <div class="font-option selected" data-font="'Nanum Myeongjo', serif" data-weight="400">
-        <span class="font-name">나눔명조</span>
-        <span class="font-preview" style="font-family:'Nanum Myeongjo';font-weight:400;">태초에 하나님이 천지를</span>
+      <div class="font-option" data-font="'Nanum Myeongjo', serif" data-weight="400">
+        <span class="font-name">Nanum Myeongjo</span>
+        <span class="font-preview" style="font-family:'Nanum Myeongjo';font-weight:400;">In the beginning God created</span>
       </div>
       <div class="font-option" data-font="-apple-system, 'Pretendard', sans-serif" data-weight="300">
         <span class="font-name">System</span>
-        <span class="font-preview" style="font-family:-apple-system,'Pretendard',sans-serif;font-weight:300;">태초에 하나님이 천지를</span>
+        <span class="font-preview" style="font-family:-apple-system,'Pretendard',sans-serif;font-weight:300;">In the beginning God created</span>
       </div>
     </div>
     <div class="settings-section">
-      <div class="settings-label">Size</div>
+      <div class="settings-label">Font Size</div>
       <div class="settings-row">
         <button class="settings-btn" id="fontSizeDown" style="flex:0 0 44px;">A-</button>
-        <span id="fontSizeLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">19px</span>
+        <span id="fontSizeLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">16px</span>
         <button class="settings-btn" id="fontSizeUp" style="flex:0 0 44px;">A+</button>
       </div>
     </div>
     <div class="settings-section">
       <div class="settings-label">Line Spacing</div>
       <div class="settings-row">
-        <button class="settings-btn" id="lineHeightDown">−</button>
-        <span id="lineHeightLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">1.8</span>
-        <button class="settings-btn" id="lineHeightUp">+</button>
+        <button class="settings-btn" id="lineHeightDown">Tight</button>
+        <span id="lineHeightLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">1.9</span>
+        <button class="settings-btn" id="lineHeightUp">Wide</button>
       </div>
     </div>
     <div class="settings-section">
-      <div class="settings-label">Verse Gap</div>
+      <div class="settings-label">Verse Spacing</div>
       <div class="settings-row">
-        <button class="settings-btn" id="versePaddingDown">−</button>
-        <span id="versePaddingLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">1.4rem</span>
-        <button class="settings-btn" id="versePaddingUp">+</button>
+        <button class="settings-btn" id="versePaddingDown">Tight</button>
+        <span id="versePaddingLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">1rem</span>
+        <button class="settings-btn" id="versePaddingUp">Wide</button>
       </div>
     </div>
     <div class="settings-section">
-      <div class="settings-label">Margin</div>
+      <div class="settings-label">Side Margins</div>
       <div class="settings-row">
-        <button class="settings-btn" id="sideMarginDown">−</button>
-        <span id="sideMarginLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">2.0rem</span>
-        <button class="settings-btn" id="sideMarginUp">+</button>
+        <button class="settings-btn" id="sideMarginDown">Tight</button>
+        <span id="sideMarginLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">3rem</span>
+        <button class="settings-btn" id="sideMarginUp">Wide</button>
       </div>
     </div>
     <div class="settings-section" style="cursor:pointer;" id="settingsAllNotes">
@@ -623,14 +624,14 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 <div class="action-bar" id="actionBar">
   <div class="action-bar-inner">
     <span class="action-ref" id="actionRef"></span>
-    <button class="action-note-btn" id="actionNoteBtn">Note</button>
+    <button class="action-note-btn" id="actionNoteBtn">Write Note</button>
     <button class="action-cancel-btn" id="actionCancelBtn">Cancel</button>
   </div>
 </div>
 
-<!-- NOTE PANEL (hidden — using full-screen editor instead) -->
-<div class="note-overlay" id="noteOverlay" style="display:none"></div>
-<div class="note-panel" id="notePanel" style="display:none">
+<!-- NOTE PANEL (slide from right) -->
+<div class="note-overlay" id="noteOverlay"></div>
+<div class="note-panel" id="notePanel">
   <div class="note-panel-header">
     <span class="ref" id="notePanelRef"></span>
     <button id="notePanelClose">Close</button>
@@ -641,12 +642,12 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 <!-- FULL SCREEN NOTE EDITOR -->
 <div class="note-editor" id="noteEditor">
   <div class="note-editor-header">
-    <button class="note-editor-back" id="noteEditorBack">←</button>
-    <span class="note-editor-status" id="noteEditorStatus"></span>
+    <button class="note-editor-back" id="noteEditorBack">&#8592; Back</button>
+    <button class="note-editor-save" id="noteEditorSave">Save</button>
   </div>
   <div class="note-editor-ref" id="noteEditorRef"></div>
   <div class="note-editor-body">
-    <textarea class="note-editor-textarea" id="noteEditorTextarea" placeholder="Write your thoughts..."></textarea>
+    <textarea class="note-editor-textarea" id="noteEditorTextarea" placeholder="Write your reflection..."></textarea>
   </div>
 </div>
 
@@ -655,8 +656,8 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   <div class="book-selector-header">
     <button id="bookSelectorClose">&#10005;</button>
     <div class="tabs">
-      <div class="tab active" data-tab="ot">구약</div>
-      <div class="tab" data-tab="nt">신약</div>
+      <div class="tab active" data-tab="ot">OT</div>
+      <div class="tab" data-tab="nt">NT</div>
     </div>
   </div>
   <div class="book-selector-body" id="bookSelectorBody"></div>
@@ -714,14 +715,14 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   var state = {
     bookIndex: 0,
     chapter: 1,
-    lang: 'ko',
+    lang: 'en',
     selectedVerses: [],
-    fontFamily: "'Nanum Myeongjo', serif",
-    fontWeight: '400',
-    fontSize: 19,
-    lineHeight: 1.8,
-    versePadding: 1.4,
-    sideMargin: 2
+    fontFamily: "'Noto Sans KR', sans-serif",
+    fontWeight: '300',
+    fontSize: 16,
+    lineHeight: 1.9,
+    versePadding: 1,
+    sideMargin: 3
   };
 
   // Editor state
@@ -871,9 +872,10 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 
   function buildVerseRef(bookIndex, chapter, verseNums, lang) {
     var name = getBookName(bookIndex, lang);
-    var prefix = name + ' ' + chapter + ':';
+    var chapterLabel = lang === 'ko' ? '장' : '';
+    var prefix = name + ' ' + chapter + chapterLabel + ':';
 
-    if (!verseNums || verseNums.length === 0) return name + ' ' + chapter;
+    if (!verseNums || verseNums.length === 0) return prefix.slice(0, -1);
     var sorted = verseNums.slice().sort(function(a, b) { return a - b; });
 
     var parts = [];
@@ -934,8 +936,9 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   // ============================
   function renderVerses() {
     var verses = getVerses(state.bookIndex, state.chapter, state.lang);
+    var chapterLabel = state.lang === 'ko' ? '장' : '';
     var bookName = getBookName(state.bookIndex, state.lang);
-    bookChapterBtn.textContent = bookName + ' ' + state.chapter;
+    bookChapterBtn.textContent = bookName + ' ' + state.chapter + chapterLabel;
 
     document.getElementById('btnPrev').disabled = (state.chapter <= 1);
     document.getElementById('btnNext').disabled = (state.chapter >= getChapterCount(state.bookIndex));
@@ -985,7 +988,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
         txt.dataset.verse = verseNum;
         txt.style.fontFamily = state.fontFamily;
         txt.style.fontWeight = state.fontWeight;
-        txt.style.fontSize = state.fontSize + 'px';
+        if (state.fontSize !== 16) txt.style.fontSize = state.fontSize + 'px';
         txt.style.lineHeight = state.lineHeight;
 
         txt.addEventListener('click', function() {
@@ -1011,140 +1014,92 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   }
 
   // ============================
-  // HISTORY API — handle system back button in PWA
-  // ============================
-  function pushNavState(screen) {
-    history.pushState({ screen: screen }, '');
-  }
-
-  window.addEventListener('popstate', function(e) {
-    var s = e.state;
-    // If note editor is open and typing
-    if (noteEditor.classList.contains('active')) {
-      if (editorIsTyping) {
-        // Stage 1: stop typing
-        noteEditorTextarea.blur();
-        editorIsTyping = false;
-        if (autoSaveTimer) clearTimeout(autoSaveTimer);
-        var text = noteEditorTextarea.value.trim();
-        if (text) { autoSave(); }
-        else if (editorNoteId) {
-          db.notes.delete(editorNoteId).then(function() { closeNoteEditor(); });
-          return;
-        }
-        // Re-push so next back closes editor
-        pushNavState('editor-view');
-        return;
-      }
-      // Stage 2: close editor
-      closeNoteEditor();
-      return;
-    }
-    // If note panel is open
-    if (notePanel.classList.contains('active')) {
-      closeNotePanel();
-      return;
-    }
-    // If book selector is open
-    if (bookSelector.classList.contains('active')) {
-      bookSelector.classList.remove('active');
-      return;
-    }
-    // If settings panel is open
-    if (settingsPanel.classList.contains('active')) {
-      settingsPanel.classList.remove('active');
-      return;
-    }
-    // If all notes is open
-    if (allNotesPanel.classList.contains('active')) {
-      allNotesPanel.classList.remove('active');
-      return;
-    }
-    // Nothing open — push state back so we don't exit app
-    pushNavState('main');
-  });
-
-  // Initial state
-  history.replaceState({ screen: 'main' }, '');
-
-  // ============================
   // FULL SCREEN NOTE EDITOR
   // ============================
-  var editorIsTyping = false;
-  var autoSaveTimer = null;
-  var noteEditorStatus = document.getElementById('noteEditorStatus');
-
   function openNoteEditor(noteId, verseNums) {
     editorNoteId = noteId;
     editorVerses = verseNums;
-    editorIsTyping = false;
 
     var ref = buildVerseRef(state.bookIndex, state.chapter, verseNums, state.lang);
     noteEditorRef.textContent = ref;
-    noteEditorStatus.textContent = '';
-    noteEditorStatus.classList.remove('visible');
 
     if (noteId) {
       db.notes.get(noteId).then(function(note) {
-        noteEditorTextarea.value = note ? (note.text || '') : '';
+        if (note) {
+          noteEditorTextarea.value = note.text || '';
+        } else {
+          noteEditorTextarea.value = '';
+        }
         noteEditor.classList.add('active');
-        noteEditorTextarea.blur();
-        pushNavState('editor-view');
+        setTimeout(function() {
+          noteEditorTextarea.focus();
+          // Move cursor to end
+          noteEditorTextarea.selectionStart = noteEditorTextarea.value.length;
+          noteEditorTextarea.selectionEnd = noteEditorTextarea.value.length;
+        }, 100);
       });
     } else {
       noteEditorTextarea.value = '';
       noteEditor.classList.add('active');
-      editorIsTyping = true;
-      pushNavState('editor-typing');
       setTimeout(function() { noteEditorTextarea.focus(); }, 100);
     }
   }
 
   function closeNoteEditor() {
     noteEditor.classList.remove('active');
-    noteEditorTextarea.blur();
-    editorIsTyping = false;
-    if (autoSaveTimer) clearTimeout(autoSaveTimer);
-    renderVerses();
     editorNoteId = null;
     editorVerses = null;
   }
 
-  function autoSave() {
+  function saveNoteEditor() {
     var text = noteEditorTextarea.value;
     var now = new Date().toISOString();
     var today = now.split('T')[0];
 
     if (editorNoteId) {
-      db.notes.update(editorNoteId, { text: text, date: today, updated_at: now }).then(function() {
-        showSaveStatus();
+      // Update existing
+      db.notes.update(editorNoteId, {
+        text: text,
+        date: today,
+        updated_at: now
+      }).then(function() {
+        closeNoteEditor();
+        // Refresh note panel if open
+        if (notePanel.classList.contains('active') && editorVerses) {
+          closeNotePanel();
+          openNotePanel(editorVerses);
+        }
+        renderVerses();
       });
-    } else if (editorVerses && text.trim()) {
+    } else if (editorVerses) {
+      // Create new note
       var sorted = editorVerses.slice().sort(function(a, b) { return a - b; });
       db.notes.add({
-        book: String(state.bookIndex), chapter: state.chapter,
-        verse_start: sorted[0], verse_end: sorted[sorted.length - 1],
-        text: text, date: today, updated_at: now
-      }).then(function(id) {
-        editorNoteId = id; // Now it's an existing note
-        showSaveStatus();
+        book: String(state.bookIndex),
+        chapter: state.chapter,
+        verse_start: sorted[0],
+        verse_end: sorted[sorted.length - 1],
+        text: text,
+        date: today,
+        updated_at: now
+      }).then(function() {
+        closeNoteEditor();
+        if (notePanel.classList.contains('active')) {
+          closeNotePanel();
+          openNotePanel(sorted);
+        }
+        renderVerses();
       });
     }
   }
 
-  function showSaveStatus() {
-    noteEditorStatus.textContent = 'Saved';
-    noteEditorStatus.classList.add('visible');
-    setTimeout(function() { noteEditorStatus.classList.remove('visible'); }, 1500);
-  }
-
-  // Autosave on input — debounced 1.5s
+  // #date replacement in textarea
   noteEditorTextarea.addEventListener('input', function() {
     var ta = noteEditorTextarea;
     var val = ta.value;
     var pos = ta.selectionStart;
 
-    // #date replacement
+    // Check if user just typed "#date " or "#date\n"
     var before = val.substring(0, pos);
     var dateMatch = before.match(/#date[\s\n]$/);
     if (dateMatch) {
@@ -1160,69 +1115,37 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
       ta.selectionStart = newPos;
       ta.selectionEnd = newPos;
     }
-
-    // Debounced autosave
-    if (autoSaveTimer) clearTimeout(autoSaveTimer);
-    autoSaveTimer = setTimeout(autoSave, 1500);
   });
 
-  // Tap textarea → enter typing mode
-  noteEditorTextarea.addEventListener('focus', function() {
-    if (!editorIsTyping) {
-      editorIsTyping = true;
-      pushNavState('editor-typing');
-    }
-  });
-
-  // Back button — 2 stages
   noteEditorBack.addEventListener('click', function() {
-    if (editorIsTyping) {
-      // Stage 1: stop typing, blur textarea (view mode)
-      noteEditorTextarea.blur();
-      editorIsTyping = false;
-      // Force save immediately
-      if (autoSaveTimer) clearTimeout(autoSaveTimer);
-      var text = noteEditorTextarea.value.trim();
-      if (text) {
-        autoSave();
-      } else if (editorNoteId) {
-        // Empty note — delete it
+    // Auto-save on back if there's content
+    var text = noteEditorTextarea.value.trim();
+    if (text && editorNoteId) {
+      saveNoteEditor();
+    } else if (text && editorVerses) {
+      saveNoteEditor();
+    } else {
+      // If empty and was a new note, just close (don't save empty)
+      if (editorNoteId && !text) {
+        // Delete the empty note
         db.notes.delete(editorNoteId).then(function() {
           closeNoteEditor();
+          if (notePanel.classList.contains('active') && editorVerses) {
+            closeNotePanel();
+            openNotePanel(editorVerses);
+          }
+          renderVerses();
         });
         return;
       }
-    } else {
-      // Stage 2: close editor, go back to verses
       closeNoteEditor();
     }
   });
 
-  // ============================
-  // OPEN NOTE FOR VERSES — find existing or create new, go straight to editor
-  // ============================
-  function openNoteForVerses(verseNums) {
-    var sorted = verseNums.slice().sort(function(a, b) { return a - b; });
-
-    // Find overlapping notes for these verses
-    db.notes.where({ book: String(state.bookIndex), chapter: state.chapter }).toArray().then(function(chapterNotes) {
-      var matching = chapterNotes.filter(function(n) {
-        return sorted.some(function(v) { return v >= n.verse_start && v <= n.verse_end; });
-      });
-      matching.sort(function(a, b) { return (b.updated_at || b.date).localeCompare(a.updated_at || a.date); });
-
-      if (matching.length > 0) {
-        // Open most recent matching note in editor
-        openNoteEditor(matching[0].id, sorted);
-      } else {
-        // No existing note — open blank editor
-        openNoteEditor(null, sorted);
-      }
-    });
-  }
+  noteEditorSave.addEventListener('click', saveNoteEditor);
 
   // ============================
-  // NOTE PANEL (kept for All Notes navigation)
+  // NOTE PANEL
   // ============================
   function openNotePanel(verseNums) {
     var sorted = verseNums.slice().sort(function(a, b) { return a - b; });
@@ -1277,7 +1200,6 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 
     noteOverlay.classList.add('active');
     notePanel.classList.add('active');
-    pushNavState('note-panel');
   }
 
   function makeNoteItem(n, sorted) {
@@ -1320,7 +1242,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   // ============================
   document.getElementById('actionNoteBtn').addEventListener('click', function() {
     if (state.selectedVerses.length > 0) {
-      openNoteForVerses(state.selectedVerses.slice());
+      openNotePanel(state.selectedVerses.slice());
     }
   });
   document.getElementById('actionCancelBtn').addEventListener('click', clearSelection);
@@ -1484,8 +1406,9 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
           var ref = document.createElement('div');
           ref.className = 'all-notes-ref';
           var bookIdx = parseInt(n.book, 10);
+          var chLabel = state.lang === 'ko' ? '장' : '';
           var vRef = n.verse_start === n.verse_end ? ':' + n.verse_start : ':' + n.verse_start + '-' + n.verse_end;
-          ref.textContent = getBookName(bookIdx, state.lang) + ' ' + n.chapter + vRef;
+          ref.textContent = getBookName(bookIdx, state.lang) + ' ' + n.chapter + chLabel + vRef;
 
           var preview = document.createElement('div');
           preview.className = 'all-notes-preview';
@@ -1504,7 +1427,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
             setTimeout(function() {
               var vs = [];
               for (var v = n.verse_start; v <= n.verse_end; v++) vs.push(v);
-              openNoteEditor(n.id, vs);
+              openNotePanel(vs);
             }, 100);
           });
 
@@ -1762,22 +1685,8 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
       loadingScreen.classList.add('hidden');
       setTimeout(function() { loadingScreen.style.display = 'none'; }, 400);
 
-      // Seed sample notes if DB is empty (for demo)
-      db.notes.count().then(function(count) {
-        if (count === 0) {
-          var now = new Date().toISOString();
-          return db.notes.bulkAdd([
-            { book: '0', chapter: 1, verse_start: 1, verse_end: 2, text: '#date:2026-03-15\nThe very beginning. God existed before everything.\n\n#date:2026-03-17\nRevisiting this passage — the weight of "In the beginning" hits differently today.', date: '2026-03-17', updated_at: now },
-            { book: '0', chapter: 1, verse_start: 3, verse_end: 4, text: '#date:2026-03-15\nLight was created before the sun. The Word itself is light.\n\nGod saw that it was good — He paused to appreciate His own work.', date: '2026-03-15', updated_at: now },
-            { book: '42', chapter: 1, verse_start: 1, verse_end: 3, text: '#date:2026-03-16\nSame opening as Genesis 1:1. The Word was with God. Jesus IS the Word.\n\nAll things were made through Him — nothing exists apart from Him.', date: '2026-03-16', updated_at: now },
-            { book: '18', chapter: 23, verse_start: 1, verse_end: 1, text: '#date:2026-03-14\nThe Lord is my shepherd. Not "was" or "will be" — IS.\n\nI shall not want. Spiritual fullness, not material.', date: '2026-03-14', updated_at: now }
-          ]);
-        }
-      }).then(function() {
-        renderVerses();
-      });
-
       restoreUIState();
+      renderVerses();
 
     }).catch(function(err) {
       console.error('Failed to load Bible data:', err);
