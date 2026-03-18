@@ -602,6 +602,14 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
         <span style="font-size:12px;color:var(--text-muted);">&rarr;</span>
       </div>
     </div>
+    <div class="settings-section">
+      <div class="settings-label">Backup</div>
+      <div class="settings-row">
+        <button class="settings-btn" id="btnExportData">Export</button>
+        <button class="settings-btn" id="btnImportData">Import</button>
+      </div>
+      <input type="file" id="importFileInput" accept=".json" style="display:none;">
+    </div>
   </div>
 </div>
 
@@ -1656,8 +1664,93 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
     loadingScreen.appendChild(errDiv);
   }
 
+  // ============================
+  // EXPORT / IMPORT BACKUP
+  // ============================
+  function exportAllData() {
+    return db.notes.toArray().then(function(notes) {
+      var payload = {
+        version: 1,
+        exported_at: new Date().toISOString(),
+        tables: { notes: notes }
+      };
+      return JSON.stringify(payload, null, 2);
+    });
+  }
+
+  function importAllData(jsonString) {
+    var data = JSON.parse(jsonString);
+    if (!data || !data.tables || !Array.isArray(data.tables.notes)) {
+      throw new Error('Invalid backup file format');
+    }
+    return db.transaction('rw', db.notes, function() {
+      return db.notes.clear().then(function() {
+        return db.notes.bulkAdd(data.tables.notes);
+      });
+    });
+  }
+
+  document.getElementById('btnExportData').addEventListener('click', function() {
+    exportAllData().then(function(json) {
+      var d = new Date();
+      var dateStr = d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+      var filename = 'bible-note-backup-' + dateStr + '.json';
+
+      var blob = new Blob([json], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }).catch(function(err) {
+      console.error('Export failed:', err);
+      alert('Export failed: ' + err.message);
+    });
+  });
+
+  var importFileInput = document.getElementById('importFileInput');
+
+  document.getElementById('btnImportData').addEventListener('click', function() {
+    importFileInput.click();
+  });
+
+  importFileInput.addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+
+    if (!confirm('Import will replace all existing notes. Continue?')) {
+      importFileInput.value = '';
+      return;
+    }
+
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      importAllData(ev.target.result).then(function() {
+        importFileInput.value = '';
+        settingsPanel.classList.remove('active');
+        renderVerses();
+        alert('Import complete.');
+      }).catch(function(err) {
+        console.error('Import failed:', err);
+        alert('Import failed: ' + err.message);
+        importFileInput.value = '';
+      });
+    };
+    reader.readAsText(file);
+  });
+
   function init() {
     loadSettings();
+
+    // Request persistent storage to prevent data loss
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist();
+    }
 
     Promise.all([
       fetch('./data/krv.json').then(function(r) {
