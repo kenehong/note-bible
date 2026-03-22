@@ -169,12 +169,41 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 }
 .verse-text.just-selected { animation: selectPulse 0.4s ease-out; }
 
-/* Note indicator dot on verses with notes */
-.verse-block.has-note { position: relative; }
-.verse-note-dot {
-  display: inline-block; width: 4px; height: 4px;
-  background: var(--text-muted); border-radius: 50%;
-  margin-left: 4px; vertical-align: middle; opacity: 0.5;
+/* Note indicator: underline on verses with notes */
+.verse-block.has-note .verse-text {
+  text-decoration: underline;
+  text-decoration-color: rgba(255,255,255,0.15);
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1.5px;
+  text-decoration-skip-ink: auto;
+}
+.verse-block.has-note .verse-text.selected {
+  text-decoration-color: rgba(255,255,255,0.25);
+}
+/* Note access button */
+.note-access-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  margin-left: 4px; vertical-align: middle;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  -webkit-user-select: none; user-select: none;
+  flex-shrink: 0;
+}
+.note-access-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+.note-access-btn:active {
+  transform: scale(0.9);
+  background: rgba(255,255,255,0.14);
+}
+.note-access-btn svg {
+  width: 12px; height: 12px;
+  fill: none; stroke: var(--text-dim); stroke-width: 1.5;
+  stroke-linecap: round; stroke-linejoin: round;
 }
 
 /* === SETTINGS PANEL === */
@@ -214,6 +243,31 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 }
 .settings-btn:hover { background: var(--accent-subtle); }
 .settings-btn.active { color: var(--text); border-color: var(--text); font-weight: 500; }
+
+/* Menu items */
+.menu-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; cursor: pointer;
+  border-bottom: 1px solid var(--divider);
+  transition: background 0.15s;
+}
+.menu-item:last-child { border-bottom: none; }
+.menu-item:hover { background: var(--accent-subtle); }
+.menu-item:active { background: rgba(255,255,255,0.06); }
+.menu-item-label {
+  font-size: 14px; font-weight: 500; color: var(--text);
+}
+.menu-item-arrow {
+  font-size: 12px; color: var(--text-muted);
+}
+.menu-back {
+  justify-content: flex-start; gap: 8px;
+  border-bottom: 1px solid var(--divider);
+}
+.menu-back .menu-item-label {
+  font-size: 12px; color: var(--text-muted); font-weight: 400;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
 
 .font-option {
   padding: 12px 16px; cursor: pointer; display: flex; flex-direction: column; gap: 2px;
@@ -364,6 +418,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 }
 .note-item:last-child { border-bottom: none; }
 .note-date {
+  display: flex; align-items: center; justify-content: space-between;
   font-size: 11px; font-weight: 500; color: var(--text-muted); margin-bottom: 10px;
   letter-spacing: 0.03em;
 }
@@ -402,25 +457,18 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 
 .note-editor-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 16px;
+  padding: 14px 20px;
   border-bottom: 1px solid var(--divider);
   flex-shrink: 0;
 }
-.note-editor-back {
-  font-family: var(--font); font-size: 13px; font-weight: 400;
-  color: var(--text-dim); background: none; border: none;
-  cursor: pointer; padding: 8px 4px;
-}
-.note-editor-save {
-  font-family: var(--font); font-size: 13px; font-weight: 500;
-  color: #111; background: rgba(255,255,255,0.9); border: none;
-  border-radius: 8px; padding: 8px 18px; cursor: pointer;
-  transition: transform 0.12s;
-}
-.note-editor-save:active { transform: scale(0.94); }
 .note-editor-ref {
-  font-size: 12px; color: var(--text-muted); padding: 10px 20px 0;
-  letter-spacing: 0.01em; flex-shrink: 0;
+  font-size: 12px; color: var(--text-muted);
+  letter-spacing: 0.01em;
+}
+.note-editor-date {
+  font-size: 11px; color: var(--text-muted);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 .note-editor-body {
   flex: 1; display: flex; flex-direction: column;
@@ -435,9 +483,32 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   letter-spacing: -0.008em;
 }
 .note-editor-textarea::placeholder { color: var(--text-muted); }
+.note-editor-footer {
+  display: flex; gap: 10px;
+  padding: 12px 20px; padding-bottom: max(12px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--divider);
+  flex-shrink: 0;
+}
+.note-editor-cancel {
+  flex: 1;
+  font-family: var(--font); font-size: 14px; font-weight: 400;
+  color: var(--text-dim); background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 0; cursor: pointer;
+  transition: transform 0.12s, background 0.15s;
+}
+.note-editor-cancel:active { transform: scale(0.97); background: var(--elevated); }
+.note-editor-save-bottom {
+  flex: 1;
+  font-family: var(--font); font-size: 14px; font-weight: 500;
+  color: #111; background: rgba(255,255,255,0.9); border: none;
+  border-radius: 10px; padding: 12px 0; cursor: pointer;
+  transition: transform 0.12s;
+}
+.note-editor-save-bottom:active { transform: scale(0.97); }
 @media (max-width: 768px) {
-  .note-editor-textarea { padding: 16px 1.75rem 4rem; }
+  .note-editor-textarea { padding: 16px 1.75rem 1rem; }
   .note-editor-ref { padding: 10px 1.75rem 0; }
+  .note-editor-footer { padding: 12px 1.75rem; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
 }
 
 /* === BOOK SELECTOR OVERLAY === */
@@ -503,6 +574,17 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 }
 
 .all-notes-body { flex: 1; overflow-y: auto; padding: 16px; }
+.all-notes-footer {
+  padding: 12px 20px; padding-bottom: max(12px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--divider); flex-shrink: 0;
+}
+.all-notes-close-btn {
+  width: 100%; font-family: var(--font); font-size: 14px; font-weight: 400;
+  color: var(--text-dim); background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 0; cursor: pointer;
+  transition: transform 0.12s, background 0.15s;
+}
+.all-notes-close-btn:active { transform: scale(0.97); background: var(--elevated); }
 
 .all-notes-date-group { margin-bottom: 20px; }
 .all-notes-date {
@@ -531,75 +613,87 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 <div class="gradient-top"></div>
 <div class="gradient-bottom"></div>
 
-<!-- SETTINGS PANEL -->
+<!-- MENU PANEL (hamburger first screen) -->
 <div class="settings-panel" id="settingsPanel">
   <div class="settings-panel-inner">
-    <div class="settings-section">
-      <div class="settings-label">Language</div>
-      <div class="settings-row">
-        <button class="settings-btn" id="langKo">Korean</button>
-        <button class="settings-btn active" id="langEn">English</button>
+    <!-- Menu view -->
+    <div id="menuView">
+      <div class="menu-item" id="menuAllNotes">
+        <span class="menu-item-label">All Notes</span>
+        <span class="menu-item-arrow">&rarr;</span>
+      </div>
+      <div class="menu-item" id="menuSettings">
+        <span class="menu-item-label">Settings</span>
+        <span class="menu-item-arrow">&rarr;</span>
       </div>
     </div>
-    <div class="settings-section">
-      <div class="settings-label">Font</div>
-      <div class="font-option selected" data-font="'Noto Sans KR', sans-serif" data-weight="300">
-        <span class="font-name">Noto Sans KR Light</span>
-        <span class="font-preview" style="font-family:'Noto Sans KR';font-weight:300;">In the beginning God created</span>
+    <!-- Settings view (hidden by default) -->
+    <div id="settingsView" style="display:none;">
+      <div class="menu-item menu-back" id="settingsBack">
+        <span class="menu-item-arrow" style="transform:scaleX(-1);">&rarr;</span>
+        <span class="menu-item-label">Settings</span>
       </div>
-      <div class="font-option" data-font="'IBM Plex Sans KR', sans-serif" data-weight="300">
-        <span class="font-name">IBM Plex Sans KR</span>
-        <span class="font-preview" style="font-family:'IBM Plex Sans KR';font-weight:300;">In the beginning God created</span>
+      <div class="settings-section">
+        <div class="settings-label">Language</div>
+        <div class="settings-row">
+          <button class="settings-btn" id="langKo">Korean</button>
+          <button class="settings-btn active" id="langEn">English</button>
+        </div>
       </div>
-      <div class="font-option" data-font="'Gowun Dodum', sans-serif" data-weight="400">
-        <span class="font-name">Gowun Dodum</span>
-        <span class="font-preview" style="font-family:'Gowun Dodum';font-weight:400;">In the beginning God created</span>
+      <div class="settings-section">
+        <div class="settings-label">Font</div>
+        <div class="font-option selected" data-font="'Noto Sans KR', sans-serif" data-weight="300">
+          <span class="font-name">Noto Sans KR Light</span>
+          <span class="font-preview" style="font-family:'Noto Sans KR';font-weight:300;">In the beginning God created</span>
+        </div>
+        <div class="font-option" data-font="'IBM Plex Sans KR', sans-serif" data-weight="300">
+          <span class="font-name">IBM Plex Sans KR</span>
+          <span class="font-preview" style="font-family:'IBM Plex Sans KR';font-weight:300;">In the beginning God created</span>
+        </div>
+        <div class="font-option" data-font="'Gowun Dodum', sans-serif" data-weight="400">
+          <span class="font-name">Gowun Dodum</span>
+          <span class="font-preview" style="font-family:'Gowun Dodum';font-weight:400;">In the beginning God created</span>
+        </div>
+        <div class="font-option" data-font="'Nanum Myeongjo', serif" data-weight="400">
+          <span class="font-name">Nanum Myeongjo</span>
+          <span class="font-preview" style="font-family:'Nanum Myeongjo';font-weight:400;">In the beginning God created</span>
+        </div>
+        <div class="font-option" data-font="-apple-system, 'Pretendard', sans-serif" data-weight="300">
+          <span class="font-name">System</span>
+          <span class="font-preview" style="font-family:-apple-system,'Pretendard',sans-serif;font-weight:300;">In the beginning God created</span>
+        </div>
       </div>
-      <div class="font-option" data-font="'Nanum Myeongjo', serif" data-weight="400">
-        <span class="font-name">Nanum Myeongjo</span>
-        <span class="font-preview" style="font-family:'Nanum Myeongjo';font-weight:400;">In the beginning God created</span>
+      <div class="settings-section">
+        <div class="settings-label">Font Size</div>
+        <div class="settings-row">
+          <button class="settings-btn" id="fontSizeDown" style="flex:0 0 44px;">A-</button>
+          <span id="fontSizeLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">16px</span>
+          <button class="settings-btn" id="fontSizeUp" style="flex:0 0 44px;">A+</button>
+        </div>
       </div>
-      <div class="font-option" data-font="-apple-system, 'Pretendard', sans-serif" data-weight="300">
-        <span class="font-name">System</span>
-        <span class="font-preview" style="font-family:-apple-system,'Pretendard',sans-serif;font-weight:300;">In the beginning God created</span>
+      <div class="settings-section">
+        <div class="settings-label">Line Spacing</div>
+        <div class="settings-row">
+          <button class="settings-btn" id="lineHeightDown">Tight</button>
+          <span id="lineHeightLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">1.9</span>
+          <button class="settings-btn" id="lineHeightUp">Wide</button>
+        </div>
       </div>
-    </div>
-    <div class="settings-section">
-      <div class="settings-label">Font Size</div>
-      <div class="settings-row">
-        <button class="settings-btn" id="fontSizeDown" style="flex:0 0 44px;">A-</button>
-        <span id="fontSizeLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">16px</span>
-        <button class="settings-btn" id="fontSizeUp" style="flex:0 0 44px;">A+</button>
+      <div class="settings-section">
+        <div class="settings-label">Verse Spacing</div>
+        <div class="settings-row">
+          <button class="settings-btn" id="versePaddingDown">Tight</button>
+          <span id="versePaddingLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">1rem</span>
+          <button class="settings-btn" id="versePaddingUp">Wide</button>
+        </div>
       </div>
-    </div>
-    <div class="settings-section">
-      <div class="settings-label">Line Spacing</div>
-      <div class="settings-row">
-        <button class="settings-btn" id="lineHeightDown">Tight</button>
-        <span id="lineHeightLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">1.9</span>
-        <button class="settings-btn" id="lineHeightUp">Wide</button>
-      </div>
-    </div>
-    <div class="settings-section">
-      <div class="settings-label">Verse Spacing</div>
-      <div class="settings-row">
-        <button class="settings-btn" id="versePaddingDown">Tight</button>
-        <span id="versePaddingLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">1rem</span>
-        <button class="settings-btn" id="versePaddingUp">Wide</button>
-      </div>
-    </div>
-    <div class="settings-section">
-      <div class="settings-label">Side Margins</div>
-      <div class="settings-row">
-        <button class="settings-btn" id="sideMarginDown">Tight</button>
-        <span id="sideMarginLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">3rem</span>
-        <button class="settings-btn" id="sideMarginUp">Wide</button>
-      </div>
-    </div>
-    <div class="settings-section" style="cursor:pointer;" id="settingsAllNotes">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:13px;font-weight:500;color:var(--text);">All Notes</span>
-        <span style="font-size:12px;color:var(--text-muted);">&rarr;</span>
+      <div class="settings-section">
+        <div class="settings-label">Side Margins</div>
+        <div class="settings-row">
+          <button class="settings-btn" id="sideMarginDown">Tight</button>
+          <span id="sideMarginLabel" style="flex:1;text-align:center;font-size:13px;color:var(--text-dim);">3rem</span>
+          <button class="settings-btn" id="sideMarginUp">Wide</button>
+        </div>
       </div>
     </div>
   </div>
@@ -642,12 +736,15 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 <!-- FULL SCREEN NOTE EDITOR -->
 <div class="note-editor" id="noteEditor">
   <div class="note-editor-header">
-    <button class="note-editor-back" id="noteEditorBack">&#8592; Back</button>
-    <button class="note-editor-save" id="noteEditorSave">Save</button>
+    <div class="note-editor-ref" id="noteEditorRef"></div>
+    <div class="note-editor-date" id="noteEditorDate"></div>
   </div>
-  <div class="note-editor-ref" id="noteEditorRef"></div>
   <div class="note-editor-body">
     <textarea class="note-editor-textarea" id="noteEditorTextarea" placeholder="Write your reflection..."></textarea>
+  </div>
+  <div class="note-editor-footer">
+    <button class="note-editor-cancel" id="noteEditorBack">Cancel</button>
+    <button class="note-editor-save-bottom" id="noteEditorSave">Save</button>
   </div>
 </div>
 
@@ -667,9 +764,11 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
 <div class="all-notes-panel" id="allNotesPanel">
   <div class="all-notes-header">
     <h2>All Notes</h2>
-    <button id="allNotesClose">Close</button>
   </div>
   <div class="all-notes-body" id="allNotesBody"></div>
+  <div class="all-notes-footer">
+    <button class="all-notes-close-btn" id="allNotesClose">Close</button>
+  </div>
 </div>
 
 <script>
@@ -870,6 +969,13 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
     return ch.verses;
   }
 
+  // Format YYYY-MM-DD to MM-DD-YY
+  function formatDateUS(dateStr) {
+    if (!dateStr || dateStr.length < 10) return dateStr || '';
+    var parts = dateStr.split('-');
+    return parts[1] + '-' + parts[2] + '-' + parts[0].slice(2);
+  }
+
   function buildVerseRef(bookIndex, chapter, verseNums, lang) {
     var name = getBookName(bookIndex, lang);
     var chapterLabel = lang === 'ko' ? '장' : '';
@@ -999,9 +1105,40 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
         span.appendChild(txt);
 
         if (notedVerses.has(verseNum)) {
-          var dot = document.createElement('span');
-          dot.className = 'verse-note-dot';
-          span.appendChild(dot);
+          var noteBtn = document.createElement('span');
+          noteBtn.className = 'note-access-btn';
+          noteBtn.title = 'Open note';
+          var svgNS = 'http://www.w3.org/2000/svg';
+          var svg = document.createElementNS(svgNS, 'svg');
+          svg.setAttribute('viewBox', '0 0 16 16');
+          var p1 = document.createElementNS(svgNS, 'path');
+          p1.setAttribute('d', 'M2.5 13.5V3.5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1z');
+          var p2 = document.createElementNS(svgNS, 'path');
+          p2.setAttribute('d', 'M5.5 5.5h5M5.5 8h5M5.5 10.5h3');
+          svg.appendChild(p1);
+          svg.appendChild(p2);
+          noteBtn.appendChild(svg);
+          (function(vn) {
+            noteBtn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              var matchingNotes = chapterNotes.filter(function(n) {
+                return vn >= n.verse_start && vn <= n.verse_end;
+              });
+              if (matchingNotes.length === 1) {
+                // Single note: go straight to editor
+                var n = matchingNotes[0];
+                var verseRange = [];
+                for (var i = n.verse_start; i <= n.verse_end; i++) verseRange.push(i);
+                openNoteEditor(n.id, verseRange);
+              } else if (matchingNotes.length > 1) {
+                // Multiple notes: show list panel (no verse quote, no add btn)
+                openNotePanelListOnly(vn, matchingNotes);
+              } else {
+                openNotePanel([vn]);
+              }
+            });
+          })(verseNum);
+          span.appendChild(noteBtn);
         }
 
         versesWrap.appendChild(span);
@@ -1016,6 +1153,8 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   // ============================
   // FULL SCREEN NOTE EDITOR
   // ============================
+  var noteEditorDate = document.getElementById('noteEditorDate');
+
   function openNoteEditor(noteId, verseNums) {
     editorNoteId = noteId;
     editorVerses = verseNums;
@@ -1023,23 +1162,27 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
     var ref = buildVerseRef(state.bookIndex, state.chapter, verseNums, state.lang);
     noteEditorRef.textContent = ref;
 
+    var today = new Date().toISOString().split('T')[0];
+
     if (noteId) {
       db.notes.get(noteId).then(function(note) {
         if (note) {
           noteEditorTextarea.value = note.text || '';
+          noteEditorDate.textContent = formatDateUS(note.date || today);
         } else {
           noteEditorTextarea.value = '';
+          noteEditorDate.textContent = formatDateUS(today);
         }
         noteEditor.classList.add('active');
         setTimeout(function() {
           noteEditorTextarea.focus();
-          // Move cursor to end
           noteEditorTextarea.selectionStart = noteEditorTextarea.value.length;
           noteEditorTextarea.selectionEnd = noteEditorTextarea.value.length;
         }, 100);
       });
     } else {
       noteEditorTextarea.value = '';
+      noteEditorDate.textContent = formatDateUS(today);
       noteEditor.classList.add('active');
       setTimeout(function() { noteEditorTextarea.focus(); }, 100);
     }
@@ -1147,59 +1290,10 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   // ============================
   // NOTE PANEL
   // ============================
+  // "Write Note" from action bar — always go straight to editor (new note)
   function openNotePanel(verseNums) {
     var sorted = verseNums.slice().sort(function(a, b) { return a - b; });
-    var ref = buildVerseRef(state.bookIndex, state.chapter, sorted, state.lang);
-    notePanelRef.textContent = ref;
-
-    var verses = getVerses(state.bookIndex, state.chapter, state.lang) || [];
-
-    clearChildren(notePanelBody);
-
-    // Quote
-    var quoteTexts = sorted.map(function(vn) {
-      var v = verses.find(function(vv) { return vv.verse === vn; });
-      return vn + '. ' + (v ? v.text.trim() : '');
-    });
-    var quote = document.createElement('div');
-    quote.className = 'note-verse-quote';
-    quote.textContent = quoteTexts.join('\n');
-    notePanelBody.appendChild(quote);
-
-    // Query overlapping notes
-    db.notes.where({ book: String(state.bookIndex), chapter: state.chapter }).toArray().then(function(chapterNotes) {
-      var verseNotes = chapterNotes.filter(function(n) {
-        return sorted.some(function(v) { return v >= n.verse_start && v <= n.verse_end; });
-      });
-      verseNotes.sort(function(a, b) { return (b.updated_at || b.date).localeCompare(a.updated_at || a.date); });
-
-      if (verseNotes.length > 0) {
-        verseNotes.forEach(function(n) {
-          notePanelBody.appendChild(makeNoteItem(n, sorted));
-        });
-      }
-
-      // Footer
-      var footer = document.createElement('div');
-      footer.className = 'note-panel-footer';
-      var addBtn = document.createElement('button');
-      addBtn.className = 'note-add-btn';
-      addBtn.textContent = '+ Add Note';
-      addBtn.addEventListener('click', function() {
-        // Open full screen editor for a new note
-        openNoteEditor(null, sorted);
-      });
-      footer.appendChild(addBtn);
-      notePanelBody.appendChild(footer);
-
-      // If no notes yet, go directly to editor
-      if (verseNotes.length === 0) {
-        openNoteEditor(null, sorted);
-      }
-    });
-
-    noteOverlay.classList.add('active');
-    notePanel.classList.add('active');
+    openNoteEditor(null, sorted);
   }
 
   function makeNoteItem(n, sorted) {
@@ -1209,8 +1303,14 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
     inner.className = 'note-item-inner';
     var dateEl = document.createElement('div');
     dateEl.className = 'note-date';
-    var rangeStr = n.verse_start === n.verse_end ? ':' + n.verse_start : ':' + n.verse_start + '-' + n.verse_end;
-    dateEl.textContent = n.date + '  \u00B7  ' + rangeStr;
+    var verseNums = [];
+    for (var v = n.verse_start; v <= n.verse_end; v++) verseNums.push(v);
+    var refSpan = document.createElement('span');
+    refSpan.textContent = buildVerseRef(parseInt(n.book), n.chapter, verseNums, state.lang);
+    var dateSpan = document.createElement('span');
+    dateSpan.textContent = formatDateUS(n.date);
+    dateEl.appendChild(refSpan);
+    dateEl.appendChild(dateSpan);
 
     var rendered = document.createElement('div');
     rendered.className = 'note-rendered';
@@ -1226,6 +1326,22 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
     });
 
     return item;
+  }
+
+  // Open panel with note list only (no verse quote, no add btn) — for 2+ notes
+  function openNotePanelListOnly(verseNum, notes) {
+    var ref = buildVerseRef(state.bookIndex, state.chapter, [verseNum], state.lang);
+    notePanelRef.textContent = ref;
+
+    clearChildren(notePanelBody);
+
+    notes.sort(function(a, b) { return (b.updated_at || b.date).localeCompare(a.updated_at || a.date); });
+    notes.forEach(function(n) {
+      notePanelBody.appendChild(makeNoteItem(n, [verseNum]));
+    });
+
+    noteOverlay.classList.add('active');
+    notePanel.classList.add('active');
   }
 
   function closeNotePanel() {
@@ -1427,7 +1543,7 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
             setTimeout(function() {
               var vs = [];
               for (var v = n.verse_start; v <= n.verse_end; v++) vs.push(v);
-              openNotePanel(vs);
+              openNoteEditor(n.id, vs);
             }, 100);
           });
 
@@ -1442,8 +1558,16 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
   // ============================
   // SETTINGS PANEL
   // ============================
+  var menuView = document.getElementById('menuView');
+  var settingsView = document.getElementById('settingsView');
+
   document.getElementById('btnSettings').addEventListener('click', function(e) {
     e.stopPropagation();
+    // Always reset to menu view when opening
+    if (!settingsPanel.classList.contains('active')) {
+      menuView.style.display = 'block';
+      settingsView.style.display = 'none';
+    }
     settingsPanel.classList.toggle('active');
   });
 
@@ -1572,11 +1696,22 @@ body { display: flex; flex-direction: column; max-width: 900px; margin: 0 auto; 
     versesWrap.style.paddingRight = state.sideMargin + 'rem';
   }
 
-  // All notes from settings
-  document.getElementById('settingsAllNotes').addEventListener('click', function() {
+  // Menu navigation (vars declared above with btnSettings handler)
+
+  document.getElementById('menuAllNotes').addEventListener('click', function() {
     settingsPanel.classList.remove('active');
     renderAllNotes();
     allNotesPanel.classList.add('active');
+  });
+
+  document.getElementById('menuSettings').addEventListener('click', function() {
+    menuView.style.display = 'none';
+    settingsView.style.display = 'block';
+  });
+
+  document.getElementById('settingsBack').addEventListener('click', function() {
+    settingsView.style.display = 'none';
+    menuView.style.display = 'block';
   });
 
   // ============================
